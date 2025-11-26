@@ -226,7 +226,11 @@ mu_sort_start_times,filenames,tstarts,nfiles,nmetafiles
 ; get time resolutions of different files
 ;
 tress     = dblarr(nfiles,nmetafiles)
-mu_get_time_resolution_huiyan_le,filenames,nfiles,nmetafiles,tress
+; MM mu_get_time_resolution_huiyan_le,filenames,nfiles,nmetafiles,tress
+; MM
+; mu_get_time_resolution_huiyan_le does not exist
+mu_get_time_resolution_huiyan,filenames,nfiles,nmetafiles,tress
+; MM
 ;-------------------------------------------------------------------
 ;
 ; order files by time resolution

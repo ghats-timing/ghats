@@ -184,6 +184,7 @@ output_unit     = 9   ; unit for output file writing
 ;   0 pars: user will be prompted
 ;   1 pars: parameter file with input parameters
 ;   6 pars: all parameters are specified
+
 case n_params() of
 
    0: begin
@@ -298,14 +299,15 @@ endif ELSE begin
 ;
 ; simply use the available range
 ;
-   canali(0) = 0
-   canali(1) = 14999
+; MM   canali(0) = 0
+; MM   canali(1) = 14999
    mu_set_all_channels_xmm,metafiles,filenames,channels,channels1,channels2, $
                    nchannels,nfiles,nmetafiles,canali
 endelse
 
 canali(0) = min(channels1(where(channels eq 1)))
 canali(1) = max(channels2(where(channels eq 1)))
+
 ;-------------------------------------------------------------------
 ;
 ; choose type of output

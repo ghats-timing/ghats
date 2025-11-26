@@ -43,6 +43,7 @@ pro gh_xspec,nu,power,power_err,outputname,xspec=xx,telescope=telescope,instrume
 ;		T. Belloni  27 Jul 2009  fixed bug to allow long frequency arrays
 ;		T. Belloni   6 Oct 2009  no override of power array
 ;		T. Belloni  01 Dec 2010  from mu6. Added keywords for telescope and instrument
+;       M. Mendez   29 Sep 2023  write quality of channel; if value or error is NaN set quality=5 (bad from user)
 ;-
 ;--------------------------------------------------------------------------
 ;
@@ -62,6 +63,19 @@ pro gh_xspec,nu,power,power_err,outputname,xspec=xx,telescope=telescope,instrume
    power2_err=power_err*delta_nu*2.0
    f1 = nu-delta_nu
    f2 = nu+delta_nu
+
+; MM
+; create vector 'quality' filled with 0's and same length as power
+   quality=intarr(nfreq)
+; find index number of elements of power2 that are NaN
+; and set quality of those to 5
+   index1 = Where( NOT Float( Finite(power2) ) )
+   quality(index1)=5
+; do the same for elements of power2_err that are NaN
+   index2 = Where( NOT Float( Finite(power2_err) ) )
+   quality(index2)=5
+; MM
+
 ;
 ;
 ;  output
@@ -81,7 +95,11 @@ pro gh_xspec,nu,power,power_err,outputname,xspec=xx,telescope=telescope,instrume
    endelse
 	
 
-   gh_pha,power2,power2_err,output_pha,output_rmf,telescope,instrument
+; MM   gh_pha,power2,power2_err,output_pha,output_rmf,telescope,instrument
+; MM
+; add quality column to output file
+   gh_pha,power2,power2_err,quality,output_pha,output_rmf,telescope,instrument
+; MM
    gh_rmf,f1,f2,output_rmf,telescope,instrument
 
    if(keyword_Set(xx)) then begin

@@ -92,6 +92,13 @@ for j=0,nmetafiles-1 do begin
 	 tzero=fxpar(header,'TIMEZERO')
 ;	    reads in the GTIs
 	 fxbreadm,unit,[1,2],gti,gti2   ; changed for GDL 16-10-2018
+
+; MM: Changed because we are having drop outs in the FFTs with Federico in MAXI J1803
+; whereas this did not happen when we did not include TIMEZERO in the GTI's
+
+         tzero=0.0
+; MM Added only the above line
+
 	 gti = gti+tzero
 	 gti2 = gti2+tzero
 	 valtimes1(0:nvaltimes(i,j)-1,i,j) = gti

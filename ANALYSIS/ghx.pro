@@ -112,6 +112,9 @@ tdead            = 1.0e-5
 flux             = 0.0d0
 fondo            = 0.0d0
 
+print,n_selected
+
+
 ; --------------- Data selection ------------------
 
 if(keyword_set(index)) then begin

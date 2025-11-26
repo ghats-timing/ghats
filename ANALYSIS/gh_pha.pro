@@ -1,4 +1,4 @@
-PRO GH_PHA,POWER,POWER_ERR,PHANAME,RMFNAME,TELESCOPE,INSTRUMENT
+PRO GH_PHA,POWER,POWER_ERR,QQ,PHANAME,RMFNAME,TELESCOPE,INSTRUMENT
 ;+
 ; NAME: 
 ;      GH_PHA
@@ -37,11 +37,15 @@ PRO GH_PHA,POWER,POWER_ERR,PHANAME,RMFNAME,TELESCOPE,INSTRUMENT
 ;       T. Belloni   7 Jun 2005  useless ANCRFILE keyword added
 ;		T. Belloni  11 Apr 2009  keep END in header and no print,hcr
 ;		T. Belloni	01 Dec 2010  from mu6
+;       M. Mendez   29 Sep 2023  write column with quality of channel
+
 ;-
 ;--------------------------------------------------------------------------
 
 ;ncol   = 6l
-ncol   = 3l
+; MM ncol   = 3l
+ncol   = 4l
+; MM
 
 nrow   = long(n_elements(POWER))
 channel  = fix(findgen(nrow) + 1)
@@ -89,6 +93,9 @@ fxaddpar,hdr,'HDUVERS','1.1.0'
 fxbaddcol,col1,hdr,CHANNEL(0),'CHANNEL',tunit='       '
 fxbaddcol,col2,hdr,POWER(0),'COUNTS',tunit='counts   '
 fxbaddcol,col3,hdr,POWER_ERR(0),'STAT_ERR ',tunit='counts   '
+; MM
+fxbaddcol,col4,hdr,QQ(0),'QUALITY',tunit='         '
+; MM
 
 nh = WHERE(STRMID(HDR,0,8) EQ 'END     ', nend)
 ;hdr=hdr(0:nh(0)-1)
@@ -111,6 +118,9 @@ FOR I=1L,NROW DO BEGIN
   FXBWRITE,UNIT,CHANNEL(I-1),COL1,I
   FXBWRITE,UNIT,POWER(I-1),COL2,I
   FXBWRITE,UNIT,POWER_ERR(I-1),COL3,I
+; MM
+  FXBWRITE,UNIT,QQ(I-1),COL4,I
+; MM
 ENDFOR
 FXBFINISH,UNIT
 END
