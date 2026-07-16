@@ -1,0 +1,249 @@
+#!/usr/bin/env python3
+"""Open the curated GHATS routine directory.
+
+This script is used by HELP/gh_help.pro and can also be run directly:
+
+    gh_help
+    gh_help alpha
+    gh_help ,alpha
+    gh_help --alpha
+
+The pager defaults to ``less``. Set GH_HELP_PAGER=print or
+GH_HELP_PAGER=cat for non-interactive output. Use --terminal to open
+the pager in a separate terminal window, which is useful when called
+from IDL/GHATS. Set GH_HELP_FONT and GH_HELP_FONT_SIZE to select the
+terminal font where the terminal emulator supports command-line font options.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import pty
+import shlex
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+def repo_root() -> Path:
+    env_root = os.environ.get("MU_PATH")
+    if env_root:
+        return Path(env_root)
+    return Path(__file__).resolve().parents[1]
+
+
+def help_file(section: str) -> Path:
+    name = {
+        "task": "ghats_routines_task.txt",
+        "alpha": "ghats_routines_alpha.txt",
+    }[section]
+    return repo_root() / "HELP" / name
+
+
+def normalize_args(argv: list[str]) -> list[str]:
+    normalized = []
+    for arg in argv:
+        key = arg.strip().lower()
+        while key.startswith(","):
+            key = key[1:]
+        if key.startswith("/"):
+            key = key[1:]
+
+        if key in {"alpha", "task", "help", "terminal", "print"}:
+            normalized.append("--" + key)
+        else:
+            normalized.append(arg)
+    return normalized
+
+
+def print_file(path: Path) -> int:
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                print(line, end="")
+    except OSError as exc:
+        print(f"ERROR: cannot read {path}: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def wait_status_to_exit_code(status: int) -> int:
+    try:
+        return os.waitstatus_to_exitcode(status)
+    except AttributeError:
+        return status >> 8
+    except ValueError:
+        return 1
+
+
+def terminal_geometry(path: Path) -> str:
+    try:
+        width = max(len(line.rstrip("\n")) for line in path.read_text().splitlines()) + 4
+    except (OSError, ValueError):
+        width = 132
+
+    width = max(width, 100)
+    rows = 40
+
+    env_width = os.environ.get("GH_HELP_WIDTH")
+    env_rows = os.environ.get("GH_HELP_ROWS")
+    if env_width:
+        try:
+            width = int(env_width)
+        except ValueError:
+            pass
+    if env_rows:
+        try:
+            rows = int(env_rows)
+        except ValueError:
+            pass
+
+    return f"{width}x{rows}"
+
+
+def terminal_font() -> str:
+    return os.environ.get("GH_HELP_FONT", "Menlo:style=Regular")
+
+
+def terminal_font_size() -> str:
+    return os.environ.get("GH_HELP_FONT_SIZE", "14")
+
+
+def page_file(path: Path, pager: str) -> int:
+    if pager.lower() in {"print", "cat"}:
+        return print_file(path)
+
+    command = shlex.split(pager) + [str(path)]
+
+    try:
+        return wait_status_to_exit_code(pty.spawn(command))
+    except KeyboardInterrupt:
+        return 130
+    except OSError:
+        pass
+
+    try:
+        # Some parent REPLs do not pass inherited stdin/stdout to full-screen
+        # tools cleanly. If pty.spawn is unavailable, talk to the terminal
+        # device directly before falling back to plain output.
+        with open("/dev/tty", "r") as tty_in, open("/dev/tty", "w") as tty_out:
+            return subprocess.call(command, stdin=tty_in, stdout=tty_out, stderr=tty_out)
+    except OSError:
+        # Fall back to the inherited handles, which is also what users expect
+        # when running this script from a normal shell.
+        try:
+            return subprocess.call(command)
+        except OSError as exc:
+            print(f"ERROR: cannot run pager {pager!r}: {exc}", file=sys.stderr)
+            return print_file(path)
+    except KeyboardInterrupt:
+        return 130
+
+
+def terminal_command(
+    terminal: str,
+    pager_command: list[str],
+    geometry: str,
+    font: str,
+) -> list[str] | None:
+    terminal = terminal.strip()
+    if terminal == "" or terminal.lower() == "auto":
+        for candidate in ("xterm", "gnome-terminal", "konsole"):
+            if shutil.which(candidate):
+                terminal = candidate
+                break
+        else:
+            return None
+
+    executable = shutil.which(terminal) or terminal
+    name = Path(terminal).name
+
+    if name == "xterm":
+        return [
+            executable,
+            "-T",
+            "GHATS help",
+            "-geometry",
+            geometry,
+            "-fa",
+            font,
+            "-fs",
+            terminal_font_size(),
+            "-e",
+        ] + pager_command
+    if name == "gnome-terminal":
+        return [executable, "--title=GHATS help", f"--geometry={geometry}", "--"] + pager_command
+    if name == "konsole":
+        return [executable, "--title", "GHATS help", "--geometry", geometry, "-e"] + pager_command
+
+    # Generic fallback for terminals with xterm-like -e semantics.
+    return [executable, "-geometry", geometry, "-e"] + pager_command
+
+
+def page_file_in_terminal(path: Path, pager: str, terminal: str) -> int:
+    if pager.lower() in {"print", "cat"}:
+        return print_file(path)
+
+    command = terminal_command(
+        terminal,
+        shlex.split(pager) + [str(path)],
+        terminal_geometry(path),
+        terminal_font(),
+    )
+    if command is None:
+        print("ERROR: cannot find a terminal emulator for GH_HELP.", file=sys.stderr)
+        print("Set GH_HELP_TERMINAL=xterm, gnome-terminal, or konsole.", file=sys.stderr)
+        return 1
+
+    try:
+        subprocess.Popen(command)
+    except OSError as exc:
+        print(f"ERROR: cannot run terminal {terminal!r}: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Open the GHATS routine directory.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--task", action="store_true", help="show routines organized by task")
+    group.add_argument("--alpha", action="store_true", help="show routines alphabetically")
+    parser.add_argument(
+        "--terminal",
+        action="store_true",
+        help="open the pager in a separate terminal window",
+    )
+    parser.add_argument(
+        "--print",
+        action="store_true",
+        dest="print_only",
+        help="print instead of opening the pager",
+    )
+    return parser.parse_args(normalize_args(argv))
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(sys.argv[1:] if argv is None else argv)
+    section = "alpha" if args.alpha else "task"
+    path = help_file(section)
+
+    if not path.exists():
+        print(f"ERROR: cannot find {path}", file=sys.stderr)
+        print("Set MU_PATH to the GHATS repository root or run from that tree.", file=sys.stderr)
+        return 1
+
+    if args.print_only:
+        return print_file(path)
+
+    pager = os.environ.get("GH_HELP_PAGER", "less")
+    if args.terminal:
+        terminal = os.environ.get("GH_HELP_TERMINAL", "auto")
+        return page_file_in_terminal(path, pager, terminal)
+
+    return page_file(path, pager)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

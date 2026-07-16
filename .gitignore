@@ -1,0 +1,39 @@
+# Local generated data products
+DATA/
+
+# GHATS / timing products
+*.fft
+*.pds
+
+# FITS-family generated products
+*.fits
+*.fit
+*.fts
+*.pha
+*.pi
+*.rmf
+*.arf
+*.evt
+
+# Other local analysis outputs
+*.lc
+*.qdp
+*.sav
+*.xcm
+
+# Generated language/runtime artifacts
+__pycache__/
+*.pyc
+*.mod
+
+# Local-only development/support material
+PYTHON/bispectrum/
+PYTHON/propfluc_sim/
+config/
+BISPECTRUM/SCRIPTS/
+BISPECTRUM/TESTS/
+*.md
+!README.md
+
+# Other directories
+.idl/

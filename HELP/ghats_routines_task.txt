@@ -1,0 +1,106 @@
+## By Task
+
+After choosing a routine, run it with `/help` for detailed usage, for example:
+`gh_cs,/help`
+
+### Start Here
+
+gh_help                         HELP              Open this routine directory in a pager.
+gh_version                      ANALYSIS          Print the GHATS version string.
+gh_info                         ANALYSIS          Print basic header information for a GHATS PDS or FFT file.
+ghats_all                       ANALYSIS          Produce a quick summary plot/report from a PDS file.
+
+### Produce PDS and FFT Files
+
+gh_xte                          FFT               Produce GHATS PDS/FFT files from RXTE/PCA data.
+gh_nicer                        NICER             Produce GHATS PDS/FFT files from NICER event data.
+gh_ep                           Einstein_Probe    Produce GHATS PDS/FFT files from Einstein Probe event data.
+gh_nustar                       NuSTAR            Produce GHATS PDS/FFT files from NuSTAR event data.
+gh_xmm                          XMM               Produce GHATS PDS/FFT files from XMM event data.
+gh_swift                        Swift             Produce GHATS PDS/FFT files from Swift/XRT event data.
+gh_ixpe                         IXPE              Produce GHATS PDS/FFT files from IXPE event data.
+gh_laxpc                        ASTROSAT/LAXPC    Produce GHATS PDS/FFT files from AstroSat/LAXPC data.
+gh_laxpc_misra                  ASTROSAT/LAXPC    Produce GHATS PDS/FFT files from AstroSat/LAXPC event data.
+gh_czti                         ASTROSAT/CZTI     Produce GHATS PDS/FFT files from AstroSat/CZTI event data.
+gh_huiyan                       Huiyan            Produce GHATS PDS/FFT files from Huiyan/HXMT data.
+gh_huiyan_le                    Huiyan/LE         Produce GHATS PDS/FFT files from Huiyan/HXMT LE data.
+gh_huiyan_me                    Huiyan/ME         Produce GHATS PDS/FFT files from Huiyan/HXMT ME data.
+gh_huiyan_he                    Huiyan/HE         Produce GHATS PDS/FFT files from Huiyan/HXMT HE data.
+gh_ascii_lcfft                  CONTRIBUTED       Produce GHATS FFT products from ASCII light curves.
+
+### Read, Average, and Rebin PDS/FFT Products
+
+ghx                             ANALYSIS          Read and average GHATS PDS files.
+ghx_fft                         ANALYSIS          Read and average GHATS FFT products.
+ghx_poisrange                   CONTRIBUTED       Read PDS files with Poisson level estimated from a frequency range.
+gh_reb                          ANALYSIS          Rebin a PDS linearly or logarithmically.
+gh_licu                         ANALYSIS          Extract a light curve from a GHATS PDS or FFT file.
+gh_nspectra                     ANALYSIS          Read the number of spectra/transforms in a GHATS PDS or FFT file.
+gh_colors                       ANALYSIS          Extract X-ray colors from a GHATS PDS file.
+gh_dyn                          ANALYSIS          Extract a dynamic PDS/time-frequency image from a PDS file.
+gh_dyn_fits                     ANALYSIS          Save a dynamic PDS/time-frequency image to FITS.
+gh_getvle                       ANALYSIS          Extract VLE information from a PDS file.
+gh_hk_xte                       ANALYSIS          Extract RXTE/PCA housekeeping information from PDS/FFT products.
+
+### Cross Spectra, Lags, and Coherence
+
+gh_cs                           CROSS_ANALYSIS    Compute lags, coherence, Re/Im, and modulus with cross-talk correction.
+gh_cross_re_im_new              CROSS_ANALYSIS    Compute cross-spectrum lags, coherence, Re/Im, and modulus from two FFT files.
+gh_cross                        ANALYSIS          Compute phase/time lags and coherence from two compatible FFT files.
+gh_cross_range                  ANALYSIS          Compute cross-spectrum quantities around a selected frequency range.
+gh_plot_lag                     ANALYSIS          Plot phase or time lags with errors.
+gh_plot_coh                     ANALYSIS          Plot coherence with errors.
+
+### Bispectrum and Bicoherence
+
+gh_bispec                       BISPECTRUM        Compute 1D/target bispectrum products from a GHATS FFT file.
+gh_bispec2d                     BISPECTRUM        Compute 2D bispectrum and squared bicoherence from a GHATS FFT file.
+gh_bispec2d_rebin               BISPECTRUM        Rebin raw 2D bispectrum sums onto coarser frequency grids.
+gh_bispec_fits                  BISPECTRUM        Compute 2D bispectrum products and write them to FITS.
+gh_bispec_plot                  BISPECTRUM        Plot 2D bispectrum, biphase, bicoherence, and related maps.
+gh_bispec_hypot                 BISPECTRUM        Extract or summarize bispectrum values along hypotenuse-like regions.
+gh_bispec_freqband_pair_matrix  BISPECTRUM        Summarize bicoherence/biphase between frequency bands.
+gh_bispec_lorentz_pair_matrix   BISPECTRUM        Summarize bicoherence/biphase between Lorentzian component bands.
+gh_bispec_target_pair_matrix    BISPECTRUM        Summarize target-band bispectrum coupling between frequency bands.
+gh_cross_bispec2d               BISPECTRUM        Compute 2D cross-bispectrum products from GHATS FFT files.
+gh_cross_bispec2d_match         BISPECTRUM        Match or compare 2D cross-bispectrum products.
+gh_cross_bispec_target_segments BISPECTRUM        Extract target cross-bispectrum values by segment.
+gh_write_bispec_fits            BISPECTRUM        Write auto-bispectrum products to FITS.
+gh_write_cross_bispec_fits      BISPECTRUM        Write cross-bispectrum products to FITS.
+gh_read_bispec_fits             BISPECTRUM        Read bispectrum products from FITS.
+
+### Plot PDS, Light Curves, and Diagnostics
+
+gh_plot_power                   ANALYSIS          Plot a PDS in P(f) form.
+gh_plot_nupower                 ANALYSIS          Plot a PDS in f*P(f) form.
+gh_oplot_power                  ANALYSIS          Overplot a PDS in P(f) form.
+gh_oplot_nupower                ANALYSIS          Overplot a PDS in f*P(f) form.
+gh_plot_licu                    ANALYSIS          Plot a light curve extracted from a PDS/FFT product.
+gh_plot_licu_nogaps             ANALYSIS          Plot a light curve while suppressing gaps.
+gh_plot_hk_xte                  ANALYSIS          Plot RXTE/PCA housekeeping curves.
+
+### XSPEC and FITS Output
+
+gh_xspec                        ANALYSIS          Write arrays as XSPEC PHA/RMF products.
+gh_pha                          ANALYSIS          Write a PHA file for XSPEC; normally called by gh_xspec.
+gh_rmf                          ANALYSIS          Write a diagonal RMF/RSP file for XSPEC; normally called by gh_xspec.
+gh_dyn_fits                     ANALYSIS          Save dynamic PDS products to FITS.
+gh_bispec_fits                  BISPECTRUM        Write bispectrum products to FITS.
+gh_write_bispec_fits            BISPECTRUM        Write auto-bispectrum products to FITS.
+gh_write_cross_bispec_fits      BISPECTRUM        Write cross-bispectrum products to FITS.
+
+### File Utilities and Low-Level Readers
+
+ghats_openpds                   ANALYSIS          Open a GHATS PDS file; low-level helper.
+ghats_openfft                   ANALYSIS          Open a GHATS FFT file; low-level helper.
+ghats_getheader                 ANALYSIS          Read a GHATS PDS/FFT header; low-level helper.
+read_pds_line                   ANALYSIS          Read the next PDS record from an open GHATS PDS file.
+read_fft_line                   ANALYSIS          Read the next FFT record from an open GHATS FFT file.
+ghx_read_pds_metafile           ANALYSIS          Read and validate a GHX PDS metafile.
+gh_split_pds                    CONTRIBUTED       Split GHATS PDS products into smaller files.
+gh_split_fft                    CONTRIBUTED       Split GHATS FFT products into smaller files.
+
+### Tests and Diagnostics
+
+test_ghx_metafile               ANALYSIS          Smoke test for GHX PDS metafile averaging.
+test_ep_support                 Einstein_Probe    Smoke test for Einstein Probe helper routines.

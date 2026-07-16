@@ -1,0 +1,140 @@
+pro mu_get_header_information_ep,filenames,types,tstarts,tends,tress, $
+         valtimes1,valtimes2, $
+	 nfiles,nmetafiles,nvaltimes, $
+         sourcename,obsid,startdate,telescope,instrument
+;
+; Procedure to obtain necessary information on input files (all of them)
+;
+;----------------------------------------------------------------------
+; Parameters
+;
+; filenames                     I: input list of filenames
+; types                         O: list of data types
+; tstarts                       O: list of start times
+; tends                         O: list of end times
+; tress                         O: list of time resolutions
+; valtimes1                     O: array of valid start times
+; valtimes2                     O: array of valid end times
+; nvaltimes                     O: dimension of valtimes1/2
+; sourcename                    O: string with source name
+; obsid                         O: observation ID
+; startdate                     O: start data of observation
+; telescope                     O: satellite name
+; instrument                    O: instrument name
+;----------------------------------------------------------------------
+unit = 10
+errmsg=''
+for j=0,nmetafiles-1 do begin
+   for i=0,nfiles-1 do begin
+
+      fxbopen,unit,filenames(i,j),1,header,errmsg=errmsg
+;
+;  get additional reference information
+;
+      if((i+j) eq 0) then begin
+         sourcename= fxpar(header,'OBJECT')
+         obsid     = fxpar(header,'OBS_ID')
+         startdate = fxpar(header,'DATE-OBS')
+         telescope = fxpar(header,'TELESCOP')
+      endif
+; If the date is in old format, cosntruct it in the new one
+      if(strpos(startdate,'/') ge 0) then begin
+	     starttime = fxpar(header,'TIME-OBS')
+	     giorno    = strmid(startdate,0,2)
+	     mese      = strmid(startdate,3,2)
+	     anno      = strmid(startdate,6,2)
+	     ora       = strmid(starttime,0,2)
+	     minuto    = strmid(starttime,3,2)
+	     secondo   = strmid(starttime,6,2)
+	     startdate = '19'+anno+'-'+mese+'-'+giorno+'T'+ $
+	                  ora+':'+minuto+':'+secondo
+	  endif
+
+      instrument= strtrim(fxpar(header,'INSTRUME'))
+      datamode	= strtrim(fxpar(header,'DATAMODE'))
+      extname	  = strtrim(fxpar(header,'EXTNAME'))
+      instrument_uc = strupcase(strtrim(instrument,2))
+
+      if((instrument_uc eq 'FXT') or (instrument_uc eq 'WXT')) then begin
+         types(i,j) = instrument_uc
+      endif else begin
+         massage,'Unrecognized Einstein Probe data type!'
+         retall
+      endelse
+
+      tstart = fxpar(header,'TSTART')
+      tstop  = fxpar(header,'TSTOP')
+      timedel= fxpar(header,'TIMEDEL')
+      if(timedel le 0.0d0) then begin
+         massage,'TIMEDEL keyword missing or invalid!'
+         retall
+      endif
+      tdim	=fxpar(header,'TDIM*')
+      ntdim	=n_elements(tdim)
+      tstarts(i,j) = tstart
+      tends(i,j)   = tstop
+      tress(i,j)   = timedel
+;
+;     now moving to GTI extension
+;     for speed reasons, the file is closed and opened again
+;
+      fxbclose,unit
+      errmsg=''
+      fxbopen,unit,filenames(i,j),'GTI',header,errmsg=errmsg
+;      status = fxmove(unit,2,/Silent)  ; too slow......_@_Y
+
+      if (errmsg ne '') then begin
+	 print,'GTI extension not found!'
+	 print,'Using all times'
+	 nvaltimes(i,j) = 1
+	 valtimes1(0,i,j) = tstarts(i,j)
+	 valtimes2(0,i,j) = tends(i,j)
+      endif ELSE begin
+;	    get number of rows in the GTI list
+	 nrows=fxpar(header,'NAXIS*')
+	 nvaltimes(i,j)=nrows(1)
+	 tzero=fxpar(header,'TIMEZERO')
+;	    reads in the GTIs
+	 fxbreadm,unit,[1,2],gti,gti2   ; changed for GDL 16-10-2018
+
+; MM: Changed because we are having drop outs in the FFTs with Federico in MAXI J1803
+; whereas this did not happen when we did not include TIMEZERO in the GTI's
+
+         tzero=0.0
+; MM Added only the above line
+
+	 gti = gti+tzero
+	 gti2 = gti2+tzero
+	 valtimes1(0:nvaltimes(i,j)-1,i,j) = gti
+	 ;fxbread,unit,gti,2
+	 valtimes2(0:nvaltimes(i,j)-1,i,j) = gti2
+      endelse
+      fxbclose,unit
+   endfor
+endfor
+;
+; trim arrays
+;
+   mass = max(nvaltimes)
+   valtimes1 = valtimes1(0:mass-1,*,*)
+   valtimes2 = valtimes2(0:mass-1,*,*)
+;
+;  consistency and sorting check
+;
+for j=0,nmetafiles-1 do begin
+   for i=1,nfiles-1 do begin
+
+      if(tstarts(i,j) lt tstarts(i-1,j)) then begin
+	 massage,'Input files are not sorted in time!'
+	 retall
+	 
+      endif
+
+      if(types(i,j) ne types(i-1,j)) then begin
+	 massage,'Inconsistent files within the same metafile!'
+	 retall
+      endif
+   endfor
+endfor
+
+end
