@@ -34,6 +34,11 @@ BISPECTRUM/SCRIPTS/
 BISPECTRUM/TESTS/
 *.md
 !README.md
+!DOCS/
+!DOCS/*.md
+!DOCS/specs/
+!DOCS/specs/*.md
+DOCS/Manual/
 
 # Other directories
 .idl/
