@@ -1,5 +1,5 @@
 pro gh_ixpe,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,nonoisydet=nonoisydet
+	       wind=wind,wpar=wpar,nonoisydet=nonoisydet,help=help
 ;+
 ; NAME:
 ;      GH_IXPE 
@@ -72,6 +72,32 @@ pro gh_ixpe,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,b
 ; MODIFICATION HISTORY:
 ;               M. Mendez   30 Nov 2023  from GH_NICER
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_IXPE'
+   print,''
+   print,'Produce GHATS .pds or .fft files from IXPE event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_IXPE'
+   print,"  GH_IXPE, '#parameters.par'"
+   print,"  GH_IXPE, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    IXPE event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] PI/PHA channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, /NONOISYDET'
+   print,''
+   print,'Example:'
+   print,"  GH_IXPE, 'event.evt', 'FFT', [0,375], 1, 4096, 'ixpe.fft'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

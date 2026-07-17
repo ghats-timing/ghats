@@ -1,5 +1,5 @@
 pro gh_laxpc,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar
+	       wind=wind,wpar=wpar,help=help
 ;+
 ; NAME:
 ;      GH_LAXPC
@@ -72,6 +72,32 @@ pro gh_laxpc,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,
 ; MODIFICATION HISTORY:
 ;   T. Belloni  23 Nov 2015  from GH_SWIFT
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_LAXPC'
+   print,''
+   print,'Produce GHATS .pds or .fft files from AstroSat/LAXPC data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_LAXPC'
+   print,"  GH_LAXPC, '#parameters.par'"
+   print,"  GH_LAXPC, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    LAXPC event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'Example:'
+   print,"  GH_LAXPC, '@events.lis', 'POWER', [0,1023], 1, 4096, 'laxpc.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

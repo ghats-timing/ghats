@@ -1,4 +1,4 @@
-pro gh_plot_licu,time,rate,x1,x2,y1,y2,ps=psopt
+pro gh_plot_licu,time,rate,x1,x2,y1,y2,ps=psopt,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_LICU
@@ -8,7 +8,7 @@ pro gh_plot_licu,time,rate,x1,x2,y1,y2,ps=psopt
 ;      This procedure plots a light curve to the current window.
 ;
 ; CALLING SEQUENCE: 
-;       GH_PLOT_LICU,TIME,RATE,X1,X2,Y1,Y2[,/PS]
+;       GH_PLOT_LICU,TIME,RATE,X1,X2,Y1,Y2[,/PS][,/HELP]
 ; INPUTS:
 ;       TIME     = Time array
 ;       RATE     = Rate array
@@ -23,6 +23,7 @@ pro gh_plot_licu,time,rate,x1,x2,y1,y2,ps=psopt
 ;
 ; KEYWORDS:
 ;       PS       = If set, output goes to a PS file
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       Plots a light curve with times from 0 to 1000s:
@@ -42,6 +43,27 @@ pro gh_plot_licu,time,rate,x1,x2,y1,y2,ps=psopt
 ;		T. Belloni  07 May 2010  from mu_plot_power
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_LICU'
+   print,''
+   print,'Plot a light curve as rate versus time.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PLOT_LICU, time, rate'
+   print,'  GH_PLOT_LICU, time, rate, x1, x2'
+   print,'  GH_PLOT_LICU, time, rate, x1, x2, y1, y2'
+   print,''
+   print,'Arguments:'
+   print,'  time   Time array, in seconds'
+   print,'  rate   Count-rate array'
+   print,'  x1,x2  Optional time range to plot'
+   print,'  y1,y2  Optional count-rate range to plot'
+   print,''
+   print,'Keywords: /PS writes gh_licu.ps; /HELP prints this message.'
+   print,''
+   return
+endif
 ;
 ; To plot in a nice way a light curve (no error bars in Y)
 ;

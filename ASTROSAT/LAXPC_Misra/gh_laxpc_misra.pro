@@ -1,5 +1,5 @@
 pro gh_laxpc_misra,infilename,outtype,canalinput,quali_unita,quali_layers,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,resp=respfilelist
+	       wind=wind,wpar=wpar,resp=respfilelist,help=help
 ;+
 ; NAME:
 ;      GH_LAXPC_MISRA
@@ -81,6 +81,34 @@ pro gh_laxpc_misra,infilename,outtype,canalinput,quali_unita,quali_layers,treb,n
 ;	T. Belloni  14 Nov 2017  command line version
 ;	T. Belloni  09 Jul 2019  fixed color accumulation
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_LAXPC_MISRA'
+   print,''
+   print,'Produce GHATS .pds or .fft files from AstroSat/LAXPC data in Misra format.'
+   print,''
+   print,'Usage:'
+   print,'  GH_LAXPC_MISRA'
+   print,"  GH_LAXPC_MISRA, '#parameters.par'"
+   print,"  GH_LAXPC_MISRA, infile, outtype, channels, units, layers, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    LAXPC event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  channel or energy selection; see routine prologue'
+   print,"  units     LAXPC units to accumulate, e.g. '123'"
+   print,"  layers    LAXPC layers to accumulate, e.g. '12345'"
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, RESP='
+   print,''
+   print,'Example:'
+   print,"  GH_LAXPC_MISRA, '@events.lis', 'POWER', [0,1023], '123', '12345', 1, 4096, 'laxpc.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

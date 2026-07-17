@@ -1,4 +1,4 @@
-pro gh_oplot_nupower,frequency,power,power_err
+pro gh_oplot_nupower,frequency,power,power_err,help=help
 ;+
 ; NAME: 
 ;      GH_OPLOT_NUPOWER
@@ -8,14 +8,14 @@ pro gh_oplot_nupower,frequency,power,power_err
 ;      This procedure overplots a power spectrum in nuPnu to the current window.
 ;
 ; CALLING SEQUENCE: 
-;       MU_OPLOT_NUPOWER,FREQUENCY,POWER,POWER_ERR
+;       GH_OPLOT_NUPOWER,FREQUENCY,POWER,POWER_ERR[,/HELP]
 ; INPUTS:
 ;       FREQUENCY= Frequency array
 ;       POWER    = Power array
 ;       POWER_ERR= Array of errors on power
 ;
 ; OUTPUTS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; KEYWORDS:
 ;       NONE
@@ -35,6 +35,18 @@ pro gh_oplot_nupower,frequency,power,power_err
 ;		T. Belloni  01 Dec 2010  from mu6
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_OPLOT_NUPOWER'
+   print,''
+   print,'Overplot a PDS as f*P(f) on the current plot.'
+   print,''
+   print,'Usage:'
+   print,'  GH_OPLOT_NUPOWER, frequency, power, power_err'
+   print,'  GH_OPLOT_NUPOWER,/HELP'
+   print,''
+   return
+endif
 ;
 pwr     = power     * frequency
 pwr_err = power_err * frequency

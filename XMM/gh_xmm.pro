@@ -1,5 +1,5 @@
 pro gh_xmm,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,mingap=mingap
+	       wind=wind,wpar=wpar,mingap=mingap,help=help
 ;+
 ; NAME:
 ;      GH_XMM
@@ -81,6 +81,32 @@ pro gh_xmm,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ba
 ;		T. Belloni  26 Nov 2015  fixed npds in command line mode
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_XMM'
+   print,''
+   print,'Produce GHATS .pds or .fft files from XMM event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_XMM'
+   print,"  GH_XMM, '#parameters.par'"
+   print,"  GH_XMM, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    XMM event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] PI/PHA channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, MINGAP='
+   print,''
+   print,'Example:'
+   print,"  GH_XMM, 'event.fits', 'POWER', [300,1000], 1, 4096, 'xmm.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

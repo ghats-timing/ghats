@@ -1,4 +1,4 @@
-pro gh_plot_hk_xte,filename,ps=psopt
+pro gh_plot_hk_xte,filename,ps=psopt,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_HK_XTE
@@ -10,7 +10,7 @@ pro gh_plot_hk_xte,filename,ps=psopt
 ;      produced.
 ;
 ; CALLING SEQUENCE: 
-;       GH_PLOT_HK_XTE,FILENAME
+;       GH_PLOT_HK_XTE,FILENAME[,/PS][,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file
 ;
@@ -19,6 +19,7 @@ pro gh_plot_hk_xte,filename,ps=psopt
 ;
 ; KEYWORDS:
 ;       PS       = If set, output goes to a PS file
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       None
@@ -39,6 +40,22 @@ pro gh_plot_hk_xte,filename,ps=psopt
 ;		T. Belloni  19 Dec 2013  gh_hk_xte call corrected
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_HK_XTE'
+   print,''
+   print,'Plot RXTE/PCA housekeeping series from a GHATS PDS/FFT file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_PLOT_HK_XTE, 'file.pds'"
+   print,"  GH_PLOT_HK_XTE, 'file.pds', /PS"
+   print,'  GH_PLOT_HK_XTE,/HELP'
+   print,''
+   print,'Output: VLE rate, number of detectors, and Poisson level.'
+   print,'Keywords: /PS writes gh_hk_xte.ps; /HELP prints this message.'
+   print,''
+   return
+endif
 ;
 ;  Get HK info from file
 ;

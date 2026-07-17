@@ -1,5 +1,5 @@
 pro gh_huiyan_le,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar
+	       wind=wind,wpar=wpar,help=help
 ;+
 ; NAME:
 ;      GH_HUIYAN_LE
@@ -76,6 +76,32 @@ pro gh_huiyan_le,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=ba
 ;		T. Belloni  15 Mar 2018  from GH_SWIFT
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_HUIYAN_LE'
+   print,''
+   print,'Produce GHATS .pds or .fft files from Huiyan/HXMT LE event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_HUIYAN_LE'
+   print,"  GH_HUIYAN_LE, '#parameters.par'"
+   print,"  GH_HUIYAN_LE, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    Huiyan/HXMT LE event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'Example:'
+   print,"  GH_HUIYAN_LE, '@events.lis', 'POWER', [0,1023], 1, 4096, 'hxmt_le.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

@@ -1,5 +1,5 @@
 pro gh_xte,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar
+	       wind=wind,wpar=wpar,help=help
 ;+
 ; NAME:
 ;      GH_XTE
@@ -99,6 +99,32 @@ pro gh_xte,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ba
 ;		T. Belloni  14 Dec 2013  fixed time rebinning from I to L
 ;		T. Belloni  26 Nov 2015  fixed npds in command line mode
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_XTE'
+   print,''
+   print,'Produce GHATS .pds or .fft files from RXTE/PCA data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_XTE'
+   print,"  GH_XTE, '#parameters.par'"
+   print,"  GH_XTE, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    RXTE/PCA file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] PHA channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, /TURBO, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'Example:'
+   print,"  GH_XTE, '@binned.lis', 'POWER', [0,35], 1, 4096, 'mysource.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

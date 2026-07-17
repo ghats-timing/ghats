@@ -1,4 +1,4 @@
-pro gh_plot_power,frequency,power,power_err,x1,x2,y1,y2,ps=psopt
+pro gh_plot_power,frequency,power,power_err,x1,x2,y1,y2,ps=psopt,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_POWER
@@ -8,7 +8,7 @@ pro gh_plot_power,frequency,power,power_err,x1,x2,y1,y2,ps=psopt
 ;      This procedure plots a power spectrum in log-log to the current window.
 ;
 ; CALLING SEQUENCE: 
-;       GH_PLOT_POWER,FREQUENCY,POWER,POWER_ERR,X1,X2,Y1,Y2[,/PS]
+;       GH_PLOT_POWER,FREQUENCY,POWER,POWER_ERR,X1,X2,Y1,Y2[,/PS][,/HELP]
 ; INPUTS:
 ;       FREQUENCY= Frequency array
 ;       POWER    = Power array
@@ -24,6 +24,7 @@ pro gh_plot_power,frequency,power,power_err,x1,x2,y1,y2,ps=psopt
 ;
 ; KEYWORDS:
 ;       PS       = If set, output goes to a PS file
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       Plots a power spectrum with frequencies from 0.1 to 64.0 Hz:
@@ -45,6 +46,28 @@ pro gh_plot_power,frequency,power,power_err,x1,x2,y1,y2,ps=psopt
 ;		T. Belloni  06 May 2010  from mu
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_POWER'
+   print,''
+   print,'Plot a PDS as P(f) in log-log form.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PLOT_POWER, frequency, power, power_err'
+   print,'  GH_PLOT_POWER, frequency, power, power_err, x1, x2'
+   print,'  GH_PLOT_POWER, frequency, power, power_err, x1, x2, y1, y2'
+   print,''
+   print,'Arguments:'
+   print,'  frequency  Frequency array, in Hz'
+   print,'  power      Power array'
+   print,'  power_err  Error array for power'
+   print,'  x1,x2      Optional frequency range to plot'
+   print,'  y1,y2      Optional power range to plot'
+   print,''
+   print,'Keywords: /PS writes gh_power.ps; /HELP prints this message.'
+   print,''
+   return
+endif
 ;
 common sis,sistema
 

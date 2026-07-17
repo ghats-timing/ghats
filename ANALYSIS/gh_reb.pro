@@ -1,5 +1,5 @@
 pro gh_reb,x,y,sy,irf,      $
-            xr,yr,syr
+            xr,yr,syr,help=help
 ;+
 ; NAME: 
 ;      GH_REB
@@ -11,7 +11,7 @@ pro gh_reb,x,y,sy,irf,      $
 ;      is logarythmic.
 ;
 ; CALLING SEQUENCE: 
-;       GH_REB,X,Y,SY,IRF,XR,YR,SYR
+;       GH_REB,X,Y,SY,IRF,XR,YR,SYR[,/HELP]
 ; INPUTS:
 ;       X        = array of X values
 ;       Y        = array of Y values
@@ -25,7 +25,7 @@ pro gh_reb,x,y,sy,irf,      $
 ;       SYR      = array of errors on SYR
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -45,6 +45,25 @@ pro gh_reb,x,y,sy,irf,      $
 ;		T. Belloni  06 May 2010  from mu_reb
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_REB'
+   print,''
+   print,'Rebin arrays with errors, linearly or logarithmically.'
+   print,''
+   print,'Usage:'
+   print,'  GH_REB, x, y, yerr, irf, xr, yr, yrerr'
+   print,''
+   print,'Arguments:'
+   print,'  x,y,yerr   Input x values, y values, and errors'
+   print,'  irf        Rebin factor: >0 linear, <0 logarithmic'
+   print,'  xr,yr,yrerr Output rebinned arrays'
+   print,''
+   print,'Example:'
+   print,'  GH_REB, freq, pow, pow_err, -100, fr, pr, pre'
+   print,''
+   return
+endif
 ;
 ghrebin,x,x,y,sy,irf,xr,dum,yr,syr,nrd
 

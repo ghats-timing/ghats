@@ -1,4 +1,4 @@
-pro gh_nspectra,filename,ntrafos
+pro gh_nspectra,filename,ntrafos,help=help
 ;+
 ; NAME: 
 ;      GH_NSPECTRA
@@ -9,7 +9,7 @@ pro gh_nspectra,filename,ntrafos
 ;      PDS file. 
 ;
 ; CALLING SEQUENCE: 
-;       GH_NSPECTRA,filename,ntrafos
+;       GH_NSPECTRA,filename,ntrafos[,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file
 ;
@@ -17,7 +17,7 @@ pro gh_nspectra,filename,ntrafos
 ;       NTRAFOS  = Output number of trafos
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -33,6 +33,20 @@ pro gh_nspectra,filename,ntrafos
 ;		T. Belloni  06 May 2010  from MU
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_NSPECTRA'
+   print,''
+   print,'Read the number of transforms stored in a GHATS PDS file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_NSPECTRA, 'file.pds', ntrafos"
+   print,''
+   print,'Output:'
+   print,'  ntrafos  Number of spectra/transforms in the file header'
+   print,''
+   return
+endif
 ;
 ; Open pds file
 ;

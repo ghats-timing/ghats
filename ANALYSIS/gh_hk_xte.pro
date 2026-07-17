@@ -1,4 +1,4 @@
-pro gh_hk_xte,filename,times,vle,ndet,poiss
+pro gh_hk_xte,filename,times,vle,ndet,poiss,help=help
 ;+
 ; NAME: 
 ;      GH_HK_XTE
@@ -10,7 +10,7 @@ pro gh_hk_xte,filename,times,vle,ndet,poiss
 ;      the poissonian level
 ;
 ; CALLING SEQUENCE: 
-;       GH_HK_XTE,FILENAME,TIMES,VLE,NDET,POISS
+;       GH_HK_XTE,FILENAME,TIMES,VLE,NDET,POISS[,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file
 ;
@@ -21,7 +21,7 @@ pro gh_hk_xte,filename,times,vle,ndet,poiss
 ;       POISS    = Array with computed Poissonian level
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -46,6 +46,23 @@ pro gh_hk_xte,filename,times,vle,ndet,poiss
 ;		T. Belloni  22 May 2012  changed name to gh_hk_xte
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_HK_XTE'
+   print,''
+   print,'Extract RXTE/PCA housekeeping curves from a GHATS PDS file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_HK_XTE, 'file.pds', times, vle, ndet, poiss"
+   print,''
+   print,'Outputs:'
+   print,'  times  Time array, in seconds from the file start'
+   print,'  vle    VLE rate per detector'
+   print,'  ndet   Number of active detectors'
+   print,'  poiss  Poisson level stored for each transform'
+   print,''
+   return
+endif
 ;
 ; Open pds file
 ;

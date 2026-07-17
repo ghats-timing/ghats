@@ -1,5 +1,5 @@
 pro gh_nicer,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,nonoisydet=nonoisydet
+	       wind=wind,wpar=wpar,nonoisydet=nonoisydet,help=help
 ;+
 ; NAME:
 ;      GH_NICER
@@ -77,6 +77,32 @@ pro gh_nicer,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
 ;		T. Belloni  02 Sep 2019  added /NONOISYDET
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_NICER'
+   print,''
+   print,'Produce GHATS .pds or .fft files from NICER event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_NICER'
+   print,"  GH_NICER, '#parameters.par'"
+   print,"  GH_NICER, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    NICER event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] PI/PHA channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, /NONOISYDET'
+   print,''
+   print,'Example:'
+   print,"  GH_NICER, 'event.evt', 'FFT', [30,1200], 10000, 32768, 'evt.fft'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

@@ -1,4 +1,4 @@
-pro gh_colors,filename,times,hr1,hr2,rate1,rate2,rate3
+pro gh_colors,filename,times,hr1,hr2,rate1,rate2,rate3,help=help
 ;+
 ; NAME: 
 ;      GH_COLORS
@@ -8,7 +8,7 @@ pro gh_colors,filename,times,hr1,hr2,rate1,rate2,rate3
 ;      This procedure extracts hardness information from a PDS file 
 ;
 ; CALLING SEQUENCE: 
-;       GH_COLORS,FILENAME,TIMES,HR1,HR2,RATE1,RATE2,RATE3
+;       GH_COLORS,FILENAME,TIMES,HR1,HR2,RATE1,RATE2,RATE3[,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file
 ;
@@ -21,7 +21,7 @@ pro gh_colors,filename,times,hr1,hr2,rate1,rate2,rate3
 ;       RATE3    = Array with third rate curve
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -40,6 +40,22 @@ pro gh_colors,filename,times,hr1,hr2,rate1,rate2,rate3
 ;		T. Belloni  20 Feb 2012  no floor rounding for times array
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_COLORS'
+   print,''
+   print,'Extract color/hardness light curves from a GHATS PDS file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_COLORS, 'file.pds', times, hr1, hr2, rate1, rate2, rate3"
+   print,''
+   print,'Outputs:'
+   print,'  times        Time array, in seconds from the file start'
+   print,'  rate1-3      Three stored band count-rate curves'
+   print,'  hr1,hr2      Hardness ratios rate2/rate1 and rate3/rate1'
+   print,''
+   return
+endif
 ;
 ; Open pds file
 ;

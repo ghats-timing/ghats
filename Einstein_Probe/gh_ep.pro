@@ -1,5 +1,5 @@
 pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar
+	       wind=wind,wpar=wpar,help=help
 ;+
 ; NAME:
 ;      GH_EP
@@ -77,6 +77,32 @@ pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ban
 ;		T. Belloni  09 Jul 2019  fixed color accumulation in template
 ;       M. Mendez/Codex  08 Jun 2026  Einstein Probe event-list front end
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_EP'
+   print,''
+   print,'Produce GHATS .pds or .fft files from Einstein Probe event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_EP'
+   print,"  GH_EP, '#parameters.par'"
+   print,"  GH_EP, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    Einstein Probe event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] PI/PHA channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'Example:'
+   print,"  GH_EP, 'fxt_clean.fits', 'POWER', [0,1023], 1, 4096, 'fxt.pds'"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

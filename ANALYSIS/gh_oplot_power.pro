@@ -1,4 +1,4 @@
-pro gh_oplot_power,frequency,power,power_err
+pro gh_oplot_power,frequency,power,power_err,help=help
 ;+
 ; NAME: 
 ;      GH_OPLOT_POWER
@@ -8,14 +8,14 @@ pro gh_oplot_power,frequency,power,power_err
 ;      This procedure overplots a power spectrum to the current window.
 ;
 ; CALLING SEQUENCE: 
-;       GH_OPLOT_POWER,FREQUENCY,POWER,POWER_ERR
+;       GH_OPLOT_POWER,FREQUENCY,POWER,POWER_ERR[,/HELP]
 ; INPUTS:
 ;       FREQUENCY= Frequency array
 ;       POWER    = Power array
 ;       POWER_ERR= Array of errors on power
 ;
 ; OUTPUTS:
-;       NONE
+;       HELP     = If set, print usage information and return
 ;
 ; KEYWORDS:
 ;       NONE
@@ -36,6 +36,18 @@ pro gh_oplot_power,frequency,power,power_err
 ;	    T. Belloni  05 May 2010  from mu
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_OPLOT_POWER'
+   print,''
+   print,'Overplot a PDS as P(f) on the current plot.'
+   print,''
+   print,'Usage:'
+   print,'  GH_OPLOT_POWER, frequency, power, power_err'
+   print,'  GH_OPLOT_POWER,/HELP'
+   print,''
+   return
+endif
 ;
 common sis,sistema
 

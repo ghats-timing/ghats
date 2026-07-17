@@ -1,6 +1,6 @@
 pro ghx_fft,filename,              $
              frequency,power,power_err, $
-             index=index,time=time,rate=rate,sel=sel	     
+             index=index,time=time,rate=rate,sel=sel,help=help
 ;+
 ; NAME: 
 ;      ghx_fft
@@ -11,7 +11,7 @@ pro ghx_fft,filename,              $
 ;
 ; CALLING SEQUENCE: 
 ;       GHX_FFT,FILENAME,FREQUENCY,FFTX,FFTX_ERR,
-;                [,INDEX=INDEX][,TIME=TIME][,RATE=RATE][,SEL=SEL]
+;                [,INDEX=INDEX][,TIME=TIME][,RATE=RATE][,SEL=SEL][,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input FFT file
 ;
@@ -25,6 +25,7 @@ pro ghx_fft,filename,              $
 ;       TIME     = range of selected times
 ;       RATE     = range of selected rates
 ;       SEL      = array with index selection
+;       HELP     = If set, print usage information and return
 ;			
 ; EXAMPLE:
 ;       Read in all FFT in an FFT file
@@ -44,6 +45,26 @@ pro ghx_fft,filename,              $
 ;       T. Belloni  04 Jun 2021  from GHX
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GHX_FFT'
+   print,''
+   print,'Read and average complex FFTs from a GHATS .fft file.'
+   print,''
+   print,'Usage:'
+   print,"  GHX_FFT, 'file.fft', frequency, fft, fft_err"
+   print,"  GHX_FFT, 'file.fft', frequency, fft, fft_err, INDEX=[i1,i2]"
+   print,"  GHX_FFT, 'file.fft', frequency, fft, fft_err, TIME=[t1,t2]"
+   print,''
+   print,'Outputs:'
+   print,'  frequency  Frequency array, in Hz'
+   print,'  fft        Averaged complex Fourier amplitudes'
+   print,'  fft_err    Scatter/error estimate for averaged FFT'
+   print,''
+   print,'Keywords: INDEX=, TIME=, RATE=, SEL= select transforms; /HELP prints this message.'
+   print,''
+   return
+endif
 ;
 ; Open FFT file
 ;

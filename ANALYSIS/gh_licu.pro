@@ -1,4 +1,4 @@
-pro gh_licu,filename,times,licu,deltat=tt,mjd=rmjd0;,back=back
+pro gh_licu,filename,times,licu,deltat=tt,mjd=rmjd0,help=help;,back=back
 ;+
 ; NAME: 
 ;      GH_LICU
@@ -8,7 +8,7 @@ pro gh_licu,filename,times,licu,deltat=tt,mjd=rmjd0;,back=back
 ;      This procedure reads the licu info of a PDS file.
 ;
 ; CALLING SEQUENCE: 
-;       GH_LICU,FILENAME,TIMES,LICU[,DELTAT=T][,MJD=RMJD0]
+;       GH_LICU,FILENAME,TIMES,LICU[,DELTAT=T][,MJD=RMJD0][,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file. If filename is empty
 ;                  or contains a non-existent file, a window will
@@ -21,6 +21,7 @@ pro gh_licu,filename,times,licu,deltat=tt,mjd=rmjd0;,back=back
 ; KEYWORDS:
 ;       T        = time bin size for the output light curve
 ;       MJD      = start modified julian date
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       Produce and plot a light curve from a PDS file:
@@ -50,6 +51,24 @@ pro gh_licu,filename,times,licu,deltat=tt,mjd=rmjd0;,back=back
 
 ;			;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_LICU'
+   print,''
+   print,'Extract the light curve stored in a GHATS PDS file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_LICU, 'file.pds', times, rate"
+   print,"  GH_LICU, 'file.pds', times, rate, DELTAT=dt, MJD=mjd0"
+   print,''
+   print,'Outputs:'
+   print,'  times  Time array, in seconds from the file start'
+   print,'  rate   Count-rate array, one value per transform'
+   print,'  DELTAT Time spacing between light-curve points'
+   print,'  MJD    Starting MJD from the file header'
+   print,''
+   return
+endif
 ;
 ; Open pds file
 ;

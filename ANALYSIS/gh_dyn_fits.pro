@@ -1,6 +1,6 @@
 pro gh_dyn_fits, inputpds, outputfits,     $
                      index=index,frebin=reb,trebin=treb, arguments, $
-                     show=show
+                     show=show,help=help
 
 ; NAME:
 ;       GH_DYN_FITS (Federico Garcia)
@@ -15,6 +15,28 @@ pro gh_dyn_fits, inputpds, outputfits,     $
 ;             Original version
 ;
   compile_opt idl2  
+
+  if keyword_set(help) then begin
+       print,''
+       print,'GH_DYN_FITS'
+       print,''
+       print,'Create a dynamic PDS with GH_DYN and save it to FITS.'
+       print,''
+       print,'Usage:'
+       print,"  GH_DYN_FITS, 'input.pds', 'output.fits'"
+       print,"  GH_DYN_FITS, 'input.pds', 'output.fits', INDEX=[i1,i2], FREBIN=-100, TREBIN=4"
+       print,"  GH_DYN_FITS, 'input.pds', 'output.fits', /SHOW"
+       print,''
+       print,'Keywords:'
+       print,'  INDEX=     Transform-index range passed to GH_DYN'
+       print,'  FREBIN=    Frequency rebin factor passed to GH_DYN'
+       print,'  TREBIN=    Time rebin factor passed to GH_DYN'
+       print,'  ARGUMENTS= String of arguments passed to the Python viewer'
+       print,'  /SHOW      Launch GH_dyn_fits_tk.py after writing the FITS file'
+       print,'  /HELP      Print this message'
+       print,''
+       return
+  endif
 
   if N_params() LT 2 then begin 
        print,'Syntax - gh_dyn_fits, inputpds, outputfits [,INDEX=INDEX][,FREBIN=FREBIN][,TREBIN=TREBIN][,ARGUMENTS][,/SHOW]'

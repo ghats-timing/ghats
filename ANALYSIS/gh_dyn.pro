@@ -1,5 +1,5 @@
 pro gh_dyn,filename,      $
-             tb,licub,nu,dynimage3,index=index,frebin=reb,trebin=treb
+             tb,licub,nu,dynimage3,index=index,frebin=reb,trebin=treb,help=help
 ;+
 ; NAME:
 ;      GH_DYN
@@ -11,7 +11,7 @@ pro gh_dyn,filename,      $
 ;      A selection is possible only on a continuous range of PDS.
 ;
 ; CALLING SEQUENCE:
-;       GH_DYN,FILENAME,TIMES,LICU,FREQUENCY,DYNIMAGE,STARTING,ENDING
+;       GH_DYN,FILENAME,TIMES,LICU,FREQUENCY,DYNIMAGE[,INDEX=INDEX][,FREBIN=FREBIN][,TREBIN=TREBIN][,/HELP]
 ; INPUTS:
 ;       FILENAME = name of the input PDS file
 ;       STARTING = index of first PDS to be selected (not mandatory)
@@ -25,7 +25,10 @@ pro gh_dyn,filename,      $
 ;       DYNIMAGE = Time-frequency power array (dim1 is time, dim2 is frequency)
 ; 
 ; KEYWORDS:
-;       NONE
+;       INDEX    = [i1,i2] transform-index range
+;       FREBIN   = frequency rebin factor; negative for logarithmic
+;       TREBIN   = time rebin factor
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -52,6 +55,27 @@ pro gh_dyn,filename,      $
 ;		T. Belloni  19 Feb 2012  no floor rounding for times array
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_DYN'
+   print,''
+   print,'Extract a dynamic PDS/time-frequency image from a GHATS PDS file.'
+   print,''
+   print,'Usage:'
+   print,"  GH_DYN, 'file.pds', time, rate, frequency, dynimage"
+   print,"  GH_DYN, 'file.pds', time, rate, frequency, dynimage, INDEX=[i1,i2]"
+   print,"  GH_DYN, 'file.pds', time, rate, frequency, dynimage, FREBIN=-100, TREBIN=4"
+   print,''
+   print,'Outputs:'
+   print,'  time       Time axis after optional time rebinning'
+   print,'  rate       Count-rate curve after optional time rebinning'
+   print,'  frequency  Frequency axis after optional frequency rebinning'
+   print,'  dynimage   Time-frequency power image'
+   print,''
+   print,'Keywords: INDEX= selects transforms; FREBIN= rebins frequency; TREBIN= rebins time.'
+   print,''
+   return
+endif
 ;
 
 if(keyword_set(index)) then begin

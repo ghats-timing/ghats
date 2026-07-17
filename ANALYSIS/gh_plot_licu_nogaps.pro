@@ -1,4 +1,4 @@
-pro gh_plot_licu_nogaps,time,rate,x1,x2,y1,y2,ps=psopt
+pro gh_plot_licu_nogaps,time,rate,x1,x2,y1,y2,ps=psopt,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_LICU_NOGAPS
@@ -8,8 +8,9 @@ pro gh_plot_licu_nogaps,time,rate,x1,x2,y1,y2,ps=psopt
 ;      This procedure plots a light curve to the current window.
 ;
 ; CALLING SEQUENCE: 
-;       GH_PLOT_LICU_NOGAPS,RATE,X1,X2,Y1,Y2[,/PS]
+;       GH_PLOT_LICU_NOGAPS,TIME,RATE,X1,X2,Y1,Y2[,/PS][,/HELP]
 ; INPUTS:
+;       TIME     = Time array, used to identify gaps
 ;       RATE     = Rate array
 ;       X1       = Optional minimum X value for plot
 ;       X2       = Optional maximum X value for plot (mandatory if X1 is set)
@@ -22,6 +23,7 @@ pro gh_plot_licu_nogaps,time,rate,x1,x2,y1,y2,ps=psopt
 ;
 ; KEYWORDS:
 ;       PS       = If set, output goes to a PS file
+;       HELP     = If set, print usage information and return
 ;
 ; EXAMPLE:
 ;       Plots a light curve with times from 0 to 1000s:
@@ -42,6 +44,27 @@ pro gh_plot_licu_nogaps,time,rate,x1,x2,y1,y2,ps=psopt
 ;		T. Belloni  17 Oct 2019  from mu_plot_licu
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_LICU_NOGAPS'
+   print,''
+   print,'Plot a light curve versus PDS index and mark time gaps.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PLOT_LICU_NOGAPS, time, rate'
+   print,'  GH_PLOT_LICU_NOGAPS, time, rate, x1, x2'
+   print,'  GH_PLOT_LICU_NOGAPS, time, rate, x1, x2, y1, y2'
+   print,''
+   print,'Arguments:'
+   print,'  time   Time array, used only to identify gaps'
+   print,'  rate   Count-rate array'
+   print,'  x1,x2  Optional PDS-index range to plot'
+   print,'  y1,y2  Optional count-rate range to plot'
+   print,''
+   print,'Keywords: /PS writes gh_licu.ps; /HELP prints this message.'
+   print,''
+   return
+endif
 ;
 ; To plot in a nice way a light curve (no error bars in Y)
 ;
