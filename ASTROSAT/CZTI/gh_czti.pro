@@ -1,5 +1,5 @@
 pro gh_czti,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,quadrants=quadrants,fraction=fraction
+	       wind=wind,wpar=wpar,quadrants=quadrants,fraction=fraction,help=help
 ;+
 ; NAME:
 ;      GH_CZTI
@@ -77,6 +77,32 @@ pro gh_czti,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,g
 ;	T. Belloni  09 Nov 2017  added background determination
 ;   T. Belloni  09 Jul 2019  fixed color accumulation
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_CZTI'
+   print,''
+   print,'Produce GHATS .pds or .fft files from AstroSat/CZTI event data.'
+   print,''
+   print,'Usage:'
+   print,'  GH_CZTI'
+   print,"  GH_CZTI, '#parameters.par'"
+   print,"  GH_CZTI, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    CZTI event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, QUADRANTS=, FRACTION='
+   print,''
+   print,'Example:'
+   print,"  GH_CZTI, '@events.lis', 'POWER', [0,511], 1, 4096, 'czti.pds', QUADRANTS=[0,1,2,3]"
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag
@@ -461,7 +487,8 @@ endif else begin
    snp=''
    andato=0
    while (andato eq 0) do begin
-      if(tress[0,0] le 1.0) then begin
+      ; The older timing-mode/PC-mode default branch below is disabled.
+      ; Keep the active default explicit so the interactive branch compiles.
 ;	      ; Window timing mode
 ;	      np = 8192L
 ;	   endif else begin
