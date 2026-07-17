@@ -107,11 +107,6 @@ ghx_read_pds_metafile           ANALYSIS          Read and validate a GHX PDS me
 gh_split_pds                    CONTRIBUTED       Split GHATS PDS products into smaller files.
 gh_split_fft                    CONTRIBUTED       Split GHATS FFT products into smaller files.
 
-### Tests and Diagnostics
-
-test_ghx_metafile               ANALYSIS          Smoke test for GHX PDS metafile averaging.
-test_ep_support                 Einstein_Probe    Smoke test for Einstein Probe helper routines.
-
 ## Alphabetical
 
 gh_ascii_lcfft                  CONTRIBUTED       Produce GHATS FFT products from ASCII light curves.
@@ -183,5 +178,3 @@ ghx_poisrange                   CONTRIBUTED       Read PDS files with Poisson le
 ghx_read_pds_metafile           ANALYSIS          Read and validate a GHX PDS metafile.
 read_fft_line                   ANALYSIS          Read the next FFT record from an open GHATS FFT file.
 read_pds_line                   ANALYSIS          Read the next PDS record from an open GHATS PDS file.
-test_ep_support                 Einstein_Probe    Smoke test for Einstein Probe helper routines.
-test_ghx_metafile               ANALYSIS          Smoke test for GHX PDS metafile averaging.

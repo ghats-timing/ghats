@@ -72,5 +72,3 @@ ghx_poisrange                   CONTRIBUTED       Read PDS files with Poisson le
 ghx_read_pds_metafile           ANALYSIS          Read and validate a GHX PDS metafile.
 read_fft_line                   ANALYSIS          Read the next FFT record from an open GHATS FFT file.
 read_pds_line                   ANALYSIS          Read the next PDS record from an open GHATS PDS file.
-test_ep_support                 Einstein_Probe    Smoke test for Einstein Probe helper routines.
-test_ghx_metafile               ANALYSIS          Smoke test for GHX PDS metafile averaging.
