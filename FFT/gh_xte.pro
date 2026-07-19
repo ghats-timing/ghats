@@ -469,6 +469,12 @@ if((np lt 1l) or (mu_power_of_two(np) ne 1)) then begin
    massage,'Number of points must be a power of two!'
    retall
 endif
+;
+; In command-line mode, a literal such as 16384 can arrive as an IDL INT.
+; The GHATS binary header expects NFT to be written as a LONG; otherwise the
+; FFT/PDS header is shifted and readers see incompatible numbers of transforms.
+;
+np = long(np)
 ;--------------------------------------------------------------------------
 ; Array allocation
 ;

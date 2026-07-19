@@ -77,8 +77,13 @@ if(keyword_set(help)) then begin
    print,''
    print,'Usage:'
    print,"  GHATS_ALL,'file.pds'"
+   print,"  GHATS_ALL,'file.fft'  ; PDS panel only; ignore light curve"
    print,"  GHATS_ALL,'file.pds',/POISSON [MM: this probably only works for RXTE]"
    print,"  GHATS_ALL,'file.pds',/PS,REBIN=-100"
+   print,''
+   print,'Notes:'
+   print,'  For FFT input, the PDS panel is computed from the FFT records.'
+   print,'  The light-curve panel is not reliable until GH_LICU supports FFT records.'
    print,''
    print,'Keywords:'
    print,'  /PS       Write plot to ghats.ps'
@@ -90,9 +95,27 @@ if(keyword_set(help)) then begin
 endif
 ; MM
 ;
+; Identify product type from the extension. GHATS_ALL remains a PDS quick-look
+; tool, but for FFT files the PDS panel must be computed from FFT records, not
+; through GHX/read_pds_line.
+;
+filetype = 'PDS'
+if(n_elements(filename) ne 0) then begin
+   fname_low = strlowcase(strtrim(filename,2))
+   if(strlen(fname_low) ge 4) then begin
+      ext = strmid(fname_low,strlen(fname_low)-4,4)
+      if(ext eq '.fft') then filetype = 'FFT'
+   endif
+endif
+; MM
+;
 ; Open tra file
 ;
-ghats_openpds,filename,unit,/dialog
+if(filetype eq 'FFT') then begin
+   ghats_openfft,filename,unit,/dialog
+endif else begin
+   ghats_openpds,filename,unit,/dialog
+endelse
 ntrafos   = 0l
 dummy     = bytarr(100)
 gh_version_string = '                '
@@ -104,6 +127,46 @@ rmjd0             = 0.0D0
 ghats_getheader,unit,gh_version_string,observatory,instrument,target,rmjd0, $
 				                     nft,T,ntrafos,e,proliferation,baryflag,n_spectral_bins, $
 				                     background_flag,dummy
+; MM
+;
+; Command-line gh_xte versions before the np=long(np) fix could write NFT as
+; a 16-bit integer. That shifts the remaining header fields by two bytes. Use
+; the same diagnostic recovery as GH_INFO so the printed/graphic header summary
+; does not silently display nonsense for those files.
+;
+header_ok = 1
+short_nft_header = 0
+if(nft le 0L) then header_ok = 0
+if(T le 1.0d-100) then header_ok = 0
+
+if(header_ok eq 0) then begin
+   point_lun,unit,72L
+   nft_short = 0
+   T_short = 0.0D0
+   ntrafos_short = 0L
+   e_short = intarr(2)
+   proliferation_short = 0
+   baryflag_short = 0
+   n_spectral_bins_short = 0
+   background_flag_short = 0
+   dummy_short = bytarr(100)
+   readu,unit,nft_short,T_short,ntrafos_short,e_short, $
+        proliferation_short,baryflag_short,n_spectral_bins_short, $
+        background_flag_short,dummy_short
+   if((nft_short gt 0) and (T_short gt 1.0d-100)) then begin
+      nft = long(nft_short)
+      T = T_short
+      ntrafos = ntrafos_short
+      e = e_short
+      proliferation = proliferation_short
+      baryflag = baryflag_short
+      n_spectral_bins = n_spectral_bins_short
+      background_flag = background_flag_short
+      dummy = dummy_short
+      header_ok = 1
+      short_nft_header = 1
+   endif
+endif
 close,unit
 ; MM
 ;
@@ -113,7 +176,11 @@ close,unit
 ;
 ;        nu_nyq = (nft/2) * T
 ;
-nyquist = 0.5d0 * double(nft) * double(T)
+if(header_ok eq 1) then begin
+   nyquist = 0.5d0 * double(nft) * double(T)
+endif else begin
+   nyquist = 0.0d0
+endelse
 ; MM
 ;
 ;  PS output setup
@@ -136,6 +203,9 @@ target      = strtrim(target,2)
 ;
 ; Extract the light curve
 ;
+if(filetype eq 'FFT') then begin
+   print,'GHATS_ALL WARNING: FFT input: light-curve panel is not reliable; ignore it.'
+endif
 gh_licu,filename,times,licu,deltat=t,mjd=rmjd0
 tmin        = times(0)
 tmax        = times(n_elements(times)-1)+1.0/t
@@ -145,15 +215,96 @@ tmax        = times(n_elements(times)-1)+1.0/t
 ;window,0,TITLE=observatory+'/'+instrument+'  '+target
 plot,times,licu,psym=10,xstyle=1,ystyle=1,             $
      xtitle='Time (s)',ytitle='Rate (cts/s)',position=[0.15,0.7,0.95,0.95 ]
+if(filetype eq 'FFT') then begin
+   xyouts,0.16,0.64,'FFT input: light-curve panel is not reliable', $
+          charsize=0.8*csi,/normal
+endif
 ;
 ; Extract power spectrum from full dataset and rebin it at -100
 ;
-if(keyword_set(poisso)) then begin
-   ;muxana_n,filename,frequency,power,power_err,1L,100000L,/poisson
-   ghx,filename,frequency,power,power_err,/poisson
-  endif else begin
-   ;muxana_n,filename,frequency,power,power_err,1L,100000L
-   ghx,filename,frequency,power,power_err
+if(filetype eq 'FFT') then begin
+   ;
+   ; Compute the quick-look PDS directly from FFT records. This follows the
+   ; existing cross-spectrum routines: PDS = abs(FFT)^2 * 2 / counts, averaged
+   ; over selected transforms. Do not use GHX_FFT here, because it averages
+   ; complex Fourier amplitudes rather than powers.
+   ;
+   ghats_openfft,filename,unit,/dialog
+
+   header_dummy               = bytarr(100)
+   header_gh_version_string   = '                '
+   header_observatory         = '                '
+   header_instrument          = '                '
+   header_target              = '                '
+   header_rmjd0               = 0.0D0
+   header_ntrafos             = 0L
+   ghats_getheader,unit,header_gh_version_string,header_observatory, $
+                    header_instrument,header_target,header_rmjd0, $
+                    header_nft,header_T,header_ntrafos,header_e, $
+                    header_proliferation,header_baryflag, $
+                    header_n_spectral_bins,header_background_flag, $
+                    header_dummy
+
+   if(short_nft_header eq 1) then begin
+      ;
+      ; Broken pre-fix command-line FFT headers are two bytes shorter because
+      ; NFT was written as an INT. Start reading records at the actual data
+      ; offset for that specific layout.
+      ;
+      point_lun,unit,198L
+      header_nft = nft
+      header_T = T
+      header_ntrafos = ntrafos
+      header_dummy = dummy
+   endif
+
+   muflag = header_dummy(0)
+   i_vle = fix([header_dummy(17:18)],0)+1
+   nfreq = long(header_nft)/2L
+   rdata = complexarr(nfreq)*0.0
+   frequency = (findgen(nfreq)+1.0) * header_T
+   power = fltarr(nfreq)*0.0
+   power_err = fltarr(nfreq)*0.0
+   poilevel = fltarr(nfreq)*0.0
+   n_selected = 0L
+   tdead = 1.0e-5
+
+   for itrafos=0L,header_ntrafos-1L do begin
+      read_fft_line,unit,muflag,rmjd_fft,cnts_fft,poisson_fft, $
+                    current_vle_rate_fft,fndet_fft,rdata
+      pwr_fft = abs(rdata)^2 * 2.0/cnts_fft
+      power = power + pwr_fft
+      n_selected = n_selected + 1L
+
+      if(keyword_set(poisso)) then begin
+         poisson_estimate,poitmp,cnts_fft,1.0/header_T, $
+                          current_vle_rate_fft,nfreq,fndet_fft,i_vle,tdead
+         poilevel = poilevel + poitmp
+      endif
+   endfor
+
+   if(n_selected gt 0L) then begin
+      power = power / n_selected
+      power_err = power / sqrt(n_selected)
+      if(keyword_set(poisso)) then begin
+         poilevel = poilevel / n_selected
+         power = power - poilevel
+      endif
+   endif else begin
+      print,'Warning! No FFTs retrieved for quick-look PDS!'
+   endelse
+
+   close,unit
+   free_lun,unit
+   print,'  ',strtrim(string(n_selected),1),' FFTs selected for PDS'
+endif else begin
+   if(keyword_set(poisso)) then begin
+      ;muxana_n,filename,frequency,power,power_err,1L,100000L,/poisson
+      ghx,filename,frequency,power,power_err,/poisson
+     endif else begin
+      ;muxana_n,filename,frequency,power,power_err,1L,100000L
+      ghx,filename,frequency,power,power_err
+   endelse
 endelse
 
 if(keyword_set(rebin)) then begin
@@ -171,19 +322,27 @@ endelse
 ;
 ; Plot power spectrum
 ;
-buoni = where(pow gt 0.0)
+buoni = where(pow gt 0.0, nbuoni)
 
-plot,nu(buoni),pow(buoni),psym=10,xstyle=1,ystyle=1,     $
-     xtitle='Frequency (Hz)',ytitle='Power',/noerase,  $
-     position=[0.50,0.14,0.95,0.60],/xlog,/ylog
+if(nbuoni gt 0) then begin
+   plot,nu(buoni),pow(buoni),psym=10,xstyle=1,ystyle=1,     $
+        xtitle='Frequency (Hz)',ytitle='Power',/noerase,  $
+        position=[0.50,0.14,0.95,0.60],/xlog,/ylog
 
-if(rebin_factor ne 1) then begin
-	if(sistema eq 'IDL') then begin
-   		muerrplot,nu,pow-powerr,pow+powerr,width=0.0
-	endif else begin
-		muploterr,nu,pow,powerr,/xlog,/ylog,psym=3
-	endelse
-endif
+   if(rebin_factor ne 1) then begin
+   	if(sistema eq 'IDL') then begin
+      		muerrplot,nu,pow-powerr,pow+powerr,width=0.0
+   	endif else begin
+   		muploterr,nu,pow,powerr,/xlog,/ylog,psym=3
+   	endelse
+   endif
+endif else begin
+   print,'GHATS_ALL WARNING: no positive powers available for log PDS plot.'
+   plot,[1.0,10.0],[1.0,10.0],xstyle=1,ystyle=1,/nodata,/noerase, $
+        xtitle='Frequency (Hz)',ytitle='Power', $
+        position=[0.50,0.14,0.95,0.60],/xlog,/ylog
+   xyouts,0.60,0.36,'No positive powers to plot',charsize=csi,/normal
+endelse
 ;
 ; Label information
 ;
@@ -261,6 +420,10 @@ xyouts,0.20,0.14,strtrim(io[0],2) ,charsize=csi,/normal
 s=strsplit(strtrim(systime(0),2),' ',/extract)
 xyouts,0.20,0.11,s[0]+' '+s[1]+' '+s[2]+' '+s[4],charsize=csi,/normal
 xyouts,0.20,0.08,s[3],charsize=csi,/normal
+if(short_nft_header eq 1) then begin
+   xyouts,0.05,0.02,'WARNING: 16-bit NFT header; regenerate file', $
+          charsize=0.8*csi,/normal
+endif
 ; MM
 ; MM xyouts,0.20,0.17,strtrim(io[0],2) ,charsize=csi,/normal;,font=0
 ; MM s=strsplit(strtrim(systime(0),2),' ',/extract)
