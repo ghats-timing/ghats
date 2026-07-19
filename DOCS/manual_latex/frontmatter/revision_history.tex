@@ -1,0 +1,37 @@
+\chapter*{Revision History}
+\addcontentsline{toc}{chapter}{Revision History}
+
+This section is the starting point for the LaTeX conversion of the revision
+history in the Pages/Word manual. The entries below are copied from the first
+part of the current manual and should be expanded in later conversion passes.
+
+\section*{Version 1.0.1}
+
+\begin{itemize}
+\item Fixed uppercase/lowercase for POWER/FFT in \routine{gh_xte}.
+\item Fixed crash in \routine{GH_CROSS}.
+\item Added \routine{GH_PLOT_LAG}.
+\item Added \routine{GH_PLOT_COH}.
+\item Fixed wrong stretch time in \routine{GHATS_ALL} output.
+\item Fixed wrong stretch time in \routine{GH_XTE} output to terminal and log file.
+\end{itemize}
+
+\section*{Version 1.0.2}
+
+\begin{itemize}
+\item Added \routine{GH_CROSS_RANGE}.
+\item Removed \routine{GH_PLOT_CROSS}, a duplicate of \routine{GH_PLOT_LAG}.
+\item Fixed \routine{GH_XTE} sliding-mode bug.
+\item Fixed \routine{GH_XTE} recalculation of the number of PDS in non-turbo mode.
+\item Fixed \routine{GH_XTE} housekeeping-file discovery in turbo mode when data are elsewhere.
+\item Removed calls to \routine{FSC_FILE_BASENAME} for compatibility.
+\item Restricted \routine{GH_XTE} channel ranges to available channels.
+\item Fixed time-selection bugs in \routine{GH_CROSS}, \routine{GH_CROSS_RANGE},
+  \routine{GH_DYN}, \routine{GH_COLORS}, and related routines.
+\end{itemize}
+
+\begin{ghatsnote}
+The complete revision history remains in the legacy manual. This LaTeX
+section is intentionally partial until the conversion is done chapter by
+chapter.
+\end{ghatsnote}

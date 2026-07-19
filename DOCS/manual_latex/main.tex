@@ -1,0 +1,70 @@
+\documentclass[11pt,a4paper,oneside]{book}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\input{styles/ghats.sty}
+
+\geometry{
+  left=28mm,
+  right=28mm,
+  top=26mm,
+  bottom=26mm,
+  headheight=14pt
+}
+
+\hypersetup{
+  pdftitle={GHATS User's Manual},
+  pdfauthor={Tomaso M. Belloni; Mariano Mendez; Federico Garcia; Sara Motta},
+  colorlinks=true,
+  linkcolor=ghatsblue,
+  urlcolor=ghatsblue,
+  citecolor=ghatsblue
+}
+
+\title{GHATS User's Manual}
+\author{Tomaso M. Belloni}
+\date{Version 3.3.0 -- 29 August 2025}
+
+\begin{document}
+
+\frontmatter
+\pagenumbering{gobble}
+\hypersetup{pageanchor=false}
+\input{frontmatter/titlepage}
+\input{frontmatter/epigraphs}
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+\input{frontmatter/revision_history}
+\tableofcontents
+
+\mainmatter
+\input{chapters/introduction}
+\input{chapters/installation}
+\input{chapters/quick_start}
+\input{chapters/pds_fft_production}
+\input{chapters/read_average_rebin}
+\input{chapters/plotting}
+\input{chapters/cross_spectral}
+\input{chapters/dynamic_pds}
+\input{chapters/xspec}
+\input{chapters/routine_reference}
+\input{chapters/walkthroughs}
+
+\appendix
+\input{appendices/file_formats}
+\input{appendices/conversion_notes}
+
+\end{document}

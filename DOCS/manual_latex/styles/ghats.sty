@@ -1,0 +1,40 @@
+\definecolor{ghatsblue}{RGB}{33,69,125}
+\definecolor{ghatslightblue}{RGB}{232,239,249}
+\definecolor{ghatsgray}{RGB}{245,245,245}
+\definecolor{ghatsrule}{RGB}{185,195,210}
+
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\setlist[itemize]{leftmargin=*, itemsep=0.2em}
+\setlist[enumerate]{leftmargin=*, itemsep=0.2em}
+
+\newcommand{\ghats}{\textsc{GHATS}}
+\DeclareRobustCommand{\routine}[1]{\texttt{\detokenize{#1}}}
+\DeclareRobustCommand{\keyword}[1]{\texttt{/\detokenize{#1}}}
+\DeclareRobustCommand{\param}[1]{\texttt{\detokenize{#1}}}
+
+\newsavebox{\ghatsboxcontent}
+\newenvironment{ghatsbox}
+  {\begin{center}\setlength{\fboxsep}{8pt}\begin{lrbox}{\ghatsboxcontent}\begin{minipage}{0.86\textwidth}}
+  {\end{minipage}\end{lrbox}\fcolorbox{ghatsrule}{ghatslightblue}{\usebox{\ghatsboxcontent}}\end{center}}
+
+\newenvironment{ghatsnote}
+  {\begin{center}\setlength{\fboxsep}{8pt}\begin{lrbox}{\ghatsboxcontent}\begin{minipage}{0.86\textwidth}\textbf{Note.}\quad}
+  {\end{minipage}\end{lrbox}\fcolorbox{ghatsrule}{ghatsgray}{\usebox{\ghatsboxcontent}}\end{center}}
+
+\newenvironment{routinebox}
+  {\begin{center}\setlength{\fboxsep}{8pt}\begin{lrbox}{\ghatsboxcontent}\begin{minipage}{0.86\textwidth}}
+  {\end{minipage}\end{lrbox}\fcolorbox{ghatsblue}{white}{\usebox{\ghatsboxcontent}}\end{center}}
+
+\lstdefinestyle{ghatscode}{
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{ghatsrule},
+  backgroundcolor=\color{ghatsgray}
+}
+
+\lstnewenvironment{ghatsconsole}{\lstset{style=ghatscode}}{}

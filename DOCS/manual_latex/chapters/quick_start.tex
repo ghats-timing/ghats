@@ -1,0 +1,251 @@
+\chapter{Quick Start}
+
+This chapter gives a first complete GHATS workflow. The example follows the
+RXTE/PCA walkthrough in the legacy manual: prepare an input list, produce a
+PDS file, inspect it, extract a light curve, average the PDS, rebin it, and
+plot it.
+
+\section{Input Data}
+
+For RXTE/PCA, the starting point is normally science-array or event data. The
+supported data modes include binned data, single-bit data, event data, and
+preprocessed GoodXenon data. The time and channel resolution depend on the
+specific data mode.
+
+The input to the PDS/FFT production program can be:
+
+\begin{itemize}
+\item a single science file;
+\item a metafile, identified by a leading \texttt{@}, containing one input
+  filename per line;
+\item a meta-metafile, identified by a leading \texttt{@@}, containing one
+  metafile name per line.
+\end{itemize}
+
+Files listed in the same metafile must be homogeneous: same mode, same time
+resolution, same energy ranges, and same binning. For RXTE/PCA data, time
+sorting is not needed by the production routine.
+
+\begin{ghatsconsole}
+$ ls FS3f* > @sb.lis
+$ ls FS3b* > @event.lis
+$ ls @sb.lis @event.lis > @@all.lis
+\end{ghatsconsole}
+
+\section{Producing a PDS}
+
+Before running the production routine, compressed RXTE files and the required
+auxiliary files should be uncompressed.
+
+\begin{ghatsconsole}
+$ gzip -d FS4a* FH5a*
+\end{ghatsconsole}
+
+Start GHATS and run the production routine:
+
+\begin{ghatsconsole}
+Ghats> gh_xte
+\end{ghatsconsole}
+
+When called without arguments, \routine{gh_xte} runs interactively. A file
+selection window appears; in this example the selected file is
+\texttt{@event.lis}. The program then shows the available channel ranges and
+asks whether to use all of them or a selection.
+
+\begin{ghatsnote}
+If you are running IDL, \routine{gh_xte} can use the \keyword{TURBO} keyword,
+which switches to a faster FFT engine from IDL\_EXTRACT by C. Markwardt.
+\end{ghatsnote}
+
+The routine asks whether to produce a PDS, stored as a power-spectrum file, or
+an FFT, stored as a file of Fourier transforms. Unless the analysis requires
+time lags or coherence, a PDS is usually the first product to make. In this
+example the selected output type is \texttt{POWER}, and the output filename is
+\texttt{event.pds}.
+
+The routine can also rebin the data in time. In the example from the original
+manual, the event data have a time resolution of 16 microseconds. Rebinning by
+a factor of 4 reduces the highest frequency of interest while retaining enough
+frequency range for high-frequency features.
+
+The next choice is the number of time bins per transform, or equivalently the
+duration of each uninterrupted data stretch. If a gap is reached before the
+requested length is accumulated, the partial stretch is discarded and a new one
+starts after the gap. This prevents gaps from entering individual Fourier
+transforms. The routine accepts either the number of bins or the duration in
+seconds; using a real number such as \texttt{32.0} requests a 32-second
+transform.
+
+\begin{ghatsconsole}
+----------------------------------------------------------------
+Program gh_xte     Tue Jan 3 15:26:00 2012     User: belloni
+----------------------------------------------------------------
+Working directory               :
+/Users/belloni/data/xte/u1636/realtime/96087-01-84-10/pca
+Input filename                  :
+/Users/belloni/data/xte/u1636/realtime/96087-01-84-10/pca/@event.lis
+Instrument                      : XTE/PCA
+Observation ID                  : 96087-01-84-10
+Source name                     : 4U_1636-53
+Start date of observation       : 2011-12-29T04:01:36
+
+Channels for accumulation       :    0-249
+Type of output                  :    POWER
+Output filename                 :    event.pds
+Time resolution (s)             :    1/8192
+Nyquist frequency (Hz)          :    4096.0000
+Number of points per FFT        :    262144
+Corresponding to length (s)     :    32.000000
+Total number of FFTs            :    64
+Time step                       :    32.000000
+----------------------------------------------------------------
+\end{ghatsconsole}
+
+\section{Inspecting the Product}
+
+The file \texttt{event.pds} contains a sequence of PDS, one per selected
+uninterrupted data stretch. It also stores the corresponding count rate for
+each transform and auxiliary information used by later GHATS routines.
+
+The quickest overview is:
+
+\begin{ghatsconsole}
+Ghats> ghats_all,'event.pds'
+GH_info ------------------------------------------------
+
+PDS file name        :        event.pds
+
+Observatory          :        XTE
+Instrument           :        PCA
+Target               :        4U_1636-53
+
+N. of trafos    :   64
+Trafo duration :    32.000000
+N. of powers    :   262144
+Start-end chans.:   0-249
+Starting mjd    :   55924.168
+Time step       :   0.031250000
+Barycentered    :   NO
+Spectral bins   :   3
+Background      :   NO
+------------------------------------------------------------
+\end{ghatsconsole}
+
+\routine{ghats_all} prints the basic header information and creates a summary
+plot with the light curve and the averaged PDS. The same text information can
+be obtained with:
+
+\begin{ghatsconsole}
+Ghats> gh_info,'event.pds'
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+Spaces between parts of IDL/GDL commands are harmless but not necessary. The
+examples in this manual sometimes include spaces for readability.
+\end{ghatsnote}
+
+\section{Extracting and Plotting the Light Curve}
+
+The light curve stored in the PDS file can be extracted and plotted with:
+
+\begin{ghatsconsole}
+Ghats> gh_licu,'event.pds',time,licu
+Ghats> gh_plot_licu,time,licu
+\end{ghatsconsole}
+
+Here \param{time} and \param{licu} are arbitrary IDL/GDL variable names chosen
+by the user.
+
+\section{Averaging, Rebinning, and Plotting the PDS}
+
+The workhorse routine for reading and averaging PDS files is \routine{ghx}.
+With the default selections, the average PDS can be extracted as:
+
+\begin{ghatsconsole}
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson
+  64 power spectra selected
+\end{ghatsconsole}
+
+This reads the average PDS into three arrays: \param{nu} for frequency,
+\param{pow} for power, and \param{pow_e} for the power error. The
+\keyword{POISSON} keyword requests computation and subtraction of the
+Poissonian component.
+
+The PDS can then be rebinned:
+
+\begin{ghatsconsole}
+Ghats> gh_reb,nu,pow,pow_e,-100,x,y,ye
+\end{ghatsconsole}
+
+This writes the rebinned frequency, power, and error arrays to
+\param{x}, \param{y}, and \param{ye}. Finally:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power,x,y,ye
+\end{ghatsconsole}
+
+\section{Custom PDS Selections}
+
+The light curve can be used to select only transforms with count rates above a
+chosen value. In the legacy example, the mean count rate is:
+
+\begin{ghatsconsole}
+Ghats> print,mean(licu)
+  344.632
+\end{ghatsconsole}
+
+To average only PDS with count rates above this value:
+
+\begin{ghatsconsole}
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson,rate=[344.632,10000]
+  33 power spectra selected
+\end{ghatsconsole}
+
+Selections can also be combined with a time interval:
+
+\begin{ghatsconsole}
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson,rate=[344.632,10000],time=[0,500]
+  10 power spectra selected
+\end{ghatsconsole}
+
+or with an index interval:
+
+\begin{ghatsconsole}
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson,index=[13,34]
+  22 power spectra selected
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+GHATS command selections use indices starting from 1, not from 0.
+\end{ghatsnote}
+
+One can also pass an explicit selection array, for instance to select only odd
+indices:
+
+\begin{ghatsconsole}
+Ghats> odd_indices = 2*indgen(32)+1
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson,rate=[344.632,10000], $
+       time=[0,500],sel=odd_indices
+  7 power spectra selected
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+The legacy Word/PDF extraction of this line appears malformed. The version
+above gives the 1-based odd indices from 1 to 63.
+\end{ghatsnote}
+
+Finally, \routine{ghx} can return an rms-normalized PDS if the source and
+background rates are supplied through the appropriate keyword. The background
+rate must be estimated by the user.
+
+\begin{ghatsconsole}
+Ghats> ghx,'event.pds',nu,pow,pow_e,/poisson,rate=[344.632,10000], $
+       time=[0,500],sel=odd_indices,rms=17.36
+  7 power spectra selected
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+The scientific definitions and normalizations in this section are inherited
+from the GHATS routines. This chapter is only a LaTeX conversion prototype; it
+does not redefine the PDS, FFT, or normalization conventions.
+\end{ghatsnote}
