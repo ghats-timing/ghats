@@ -1,24 +1,345 @@
 \chapter{Producing PDS and FFT Products}
 
-This chapter will cover mission-specific routines that produce GHATS `.pds`
-and `.fft` files.
+The first GHATS step for most analyses is to turn mission event data, binned
+data, or an external light curve into a native GHATS timing product.  There
+are two closely related products:
 
-\section{Common Interface}
+\begin{itemize}
+\item a \texttt{.pds} file, containing one power spectrum for each accepted
+  uninterrupted data stretch;
+\item a \texttt{.fft} file, containing the corresponding complex Fourier
+  amplitudes.
+\end{itemize}
 
-Placeholder for the common parameters, keywords, and parameter-file mode.
+The two files are made by the same family of mission-specific production
+routines.  They use the same transform lengths, time binning, channel
+selection, GTI handling, and GHATS header conventions.  The difference is only
+what is stored after each transform has been computed: powers for a
+\texttt{.pds} file, or complex Fourier amplitudes for a \texttt{.fft} file.
+
+\begin{ghatsnote}
+Use a \texttt{.pds} file when the next step is ordinary power-spectral
+analysis.  Use a \texttt{.fft} file when the next step needs phase information,
+for example cross spectra, lags, coherence, or bispectral products.
+\end{ghatsnote}
+
+\section{Common Calling Sequence}
+
+Most mission routines have the same basic interface:
+
+\begin{ghatsconsole}
+Ghats> gh_xte
+Ghats> gh_xte, '#parameters.par'
+Ghats> gh_xte, infile, outtype, channels, treb, npds, outfile
+\end{ghatsconsole}
+
+The first form runs interactively.  The second form reads a parameter file.
+The third form gives the main parameters directly on the IDL/GDL command line.
+For a different mission, replace \routine{gh_xte} by the appropriate routine,
+for instance \routine{gh_nicer}, \routine{gh_ep}, or \routine{gh_nustar}.
+
+\begin{description}
+\item[\param{infile}] Input science file, \texttt{@} metafile, or
+  \texttt{@@} meta-metafile.  A metafile contains one input filename per line.
+\item[\param{outtype}] Output type.  Use \texttt{'POWER'} for a
+  \texttt{.pds} file or \texttt{'FFT'} for a \texttt{.fft} file.
+\item[\param{channels}] Two-element channel interval, for example
+  \texttt{[0,35]}.  The meaning of the channel is mission dependent: RXTE/PCA
+  uses PCA channels, while event-list missions normally use PI or PHA channels.
+\item[\param{treb}] Integer rebinning factor in time before computing the
+  transforms.  A value of 1 keeps the native time resolution.
+\item[\param{npds}] Transform size.  If this is an integer or long integer,
+  it is interpreted as the number of rebinned light-curve bins per transform.
+  If this is a real number, it is interpreted as a duration in seconds.
+\item[\param{outfile}] Output filename, normally ending in \texttt{.pds} or
+  \texttt{.fft}.
+\end{description}
+
+For example:
+
+\begin{ghatsconsole}
+Ghats> gh_xte, '@event.lis', 'POWER', [0,249], 1, 8192, 'fullband.pds'
+Ghats> gh_xte, '@event.lis', 'FFT',   [0,13],  1, 8192, 'soft.fft'
+Ghats> gh_xte, '@event.lis', 'FFT',   [14,249],1, 8192, 'hard.fft'
+\end{ghatsconsole}
+
+The two \texttt{.fft} files in the last two examples can then be used for
+cross-spectral work, provided they contain the same accepted transforms in the
+same order.
+
+\section{Interactive and Parameter-File Modes}
+
+When called without arguments, a production routine asks the user for the same
+choices that appear in the command-line form: input file, output type, channel
+range, time rebinning, transform length, and output filename.  This is often
+the safest way to make a first product from an unfamiliar observation, because
+the routine prints the channel information, time resolution, and final
+transform summary as it goes.
+
+A parameter file gives the same six arguments to the routine.  The command is
+called with a leading \texttt{\#}:
+
+\begin{ghatsconsole}
+Ghats> gh_xte, '#mysource.par'
+\end{ghatsconsole}
+
+This is useful when the same production command must be repeated exactly, or
+when several energy bands are being produced from the same input data.  The
+parameter-file route should preserve the same choices as the explicit
+command-line route; if two products will later be compared transform by
+transform, make the choices identical except for the channel range.
+
+\section{Input Lists}
+
+The input filename may point to a single file or to a list.  GHATS uses a
+leading \texttt{@} to identify a metafile:
+
+\begin{ghatsconsole}
+$ ls *evt* > event.lis
+Ghats> gh_nicer, '@event.lis', 'POWER', [30,1200], 1, 4096, 'nicer.pds'
+\end{ghatsconsole}
+
+A leading \texttt{@@} identifies a meta-metafile, that is, a file containing
+names of metafiles.  This convention is inherited from the RXTE routines and
+is useful when one observation contains several groups of homogeneous input
+files.
+
+Files grouped in one list should be compatible: same data mode or event-file
+layout, same time resolution, same relevant detector setup, and the same
+energy-channel convention.  GTIs and gaps may differ from file to file; the
+production routine constructs transforms only from accepted continuous
+stretches.
+
+\section{Choosing the Transform Length}
+
+The transform length determines the frequency grid.  If \(N_{\rm pds}\) rebinned
+bins enter each transform and the rebinned time resolution is \(\Delta t\),
+then the transform duration is
+
+\[
+  T_{\rm seg} = N_{\rm pds}\,\Delta t .
+\]
+
+The frequency resolution is \(1/T_{\rm seg}\), and the Nyquist frequency is
+\(1/(2\Delta t)\).  In GHATS files, the DC bin is not stored and the positive
+Fourier bins through the Nyquist bin are stored.
+
+The production routines also accept the transform length in seconds.  For
+example, if the data after rebinning have a time resolution of \(1/8192\) s,
+then these two calls request the same transform duration:
+
+\begin{ghatsconsole}
+Ghats> gh_xte, '@event.lis', 'POWER', [0,249], 1, 262144L, 'event.pds'
+Ghats> gh_xte, '@event.lis', 'POWER', [0,249], 1, 32.0,    'event.pds'
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+The number of points per transform should be a power of two.  Long transform
+lengths give finer frequency resolution but require longer uninterrupted data
+stretches.  Shorter transform lengths keep more stretches when the observation
+contains many gaps.
+\end{ghatsnote}
+
+\section{Channels and Standard Bands}
+
+The main \param{channels} argument selects the channel range accumulated into
+the timing product itself.  Most production routines also accept
+\keyword{BANDS}.  This keyword defines three auxiliary channel bands stored in
+the GHATS product and used later by routines such as \routine{gh_colors}.
+
+\begin{ghatsconsole}
+Ghats> gh_xte, '@event.lis', 'POWER', [0,249], 1, 4096, 'event.pds', $
+       bands=[3,6,7,14,15,20]
+\end{ghatsconsole}
+
+The six numbers define three intervals: \texttt{3--6}, \texttt{7--14}, and
+\texttt{15--20}.  They are instrument channels, not automatically calibrated
+physical energy bands.  For missions such as Einstein Probe, the default
+split is a technical PI-channel split unless the user supplies a more
+appropriate one.
+
+\section{GTIs, Barycentered Times, and Sliding Windows}
+
+Several common keywords control how the input data are segmented:
+
+\begin{description}
+\item[\keyword{GTI}] Intersect the data GTIs with user-supplied GTIs.  The
+  user GTI file may be an ASCII file with start and stop times or a standard
+  GTI FITS file, depending on the mission routine.
+\item[\keyword{BARY}] Read barycentered times from the appropriate
+  barycentered time column, normally \texttt{BARYTIME}.  The user is
+  responsible for ensuring that the column exists and is appropriate.
+\item[\keyword{SLIDING}] Use overlapping transforms.  If
+  \texttt{SLIDING=4}, consecutive transforms are shifted by one quarter of
+  the transform duration.  This can be useful diagnostically, but the averaged
+  PDS obtained from overlapping stretches does not have the same simple
+  statistical interpretation as an average of independent transforms.
+\end{description}
+
+\section{Window Functions}
+
+The production routines accept \keyword{WIND} and \param{WPAR}, which are
+passed to the GHATS windowing machinery.  If no window is requested, the
+default is a boxcar window.  A non-boxcar window changes the effective
+weighting of the light curve before the Fourier transform and should therefore
+be recorded when reporting a product.
+
+\section{Mission-Specific Routines}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}}
+\toprule
+Routine & Mission & Purpose \\
+\midrule
+\endhead
+\routine{gh_xte} & RXTE/PCA & Produce GHATS PDS or FFT files from RXTE/PCA data. \\
+\routine{gh_nicer} & NICER & Produce GHATS PDS or FFT files from NICER event data. \\
+\routine{gh_ep} & Einstein Probe & Produce GHATS PDS or FFT files from Einstein Probe event data. \\
+\routine{gh_nustar} & NuSTAR & Produce GHATS PDS or FFT files from NuSTAR event data. \\
+\routine{gh_xmm} & XMM & Produce GHATS PDS or FFT files from XMM event data. \\
+\routine{gh_swift} & Swift/XRT & Produce GHATS PDS or FFT files from Swift/XRT event data. \\
+\routine{gh_ixpe} & IXPE & Produce GHATS PDS or FFT files from IXPE event data. \\
+\routine{gh_laxpc} & AstroSat/LAXPC & Produce GHATS PDS or FFT files from AstroSat/LAXPC data. \\
+\routine{gh_laxpc_misra} & AstroSat/LAXPC & Produce GHATS PDS or FFT files from AstroSat/LAXPC event data. \\
+\routine{gh_czti} & AstroSat/CZTI & Produce GHATS PDS or FFT files from AstroSat/CZTI event data. \\
+\routine{gh_huiyan} & Huiyan/HXMT & Produce GHATS PDS or FFT files from Huiyan/HXMT data. \\
+\routine{gh_huiyan_le} & Huiyan/HXMT LE & Produce GHATS PDS or FFT files from Huiyan/HXMT LE data. \\
+\routine{gh_huiyan_me} & Huiyan/HXMT ME & Produce GHATS PDS or FFT files from Huiyan/HXMT ME data. \\
+\routine{gh_huiyan_he} & Huiyan/HXMT HE & Produce GHATS PDS or FFT files from Huiyan/HXMT HE data. \\
+\routine{gh_ascii_lcfft} & Contributed & Produce GHATS PDS or FFT files from an ASCII light curve. \\
+\bottomrule
+\end{longtable}
+
+Each routine can be queried from GHATS:
+
+\begin{ghatsconsole}
+Ghats> gh_xte, /help
+Ghats> gh_nicer, /help
+Ghats> gh_ep, /help
+\end{ghatsconsole}
 
 \section{RXTE/PCA}
 
-Placeholder for \routine{gh_xte}.
+\routine{gh_xte} is the original GHATS production routine and supports RXTE
+binned, single-bit, event, and GoodXenon-style inputs.  It also supports
+\keyword{TURBO}, which uses the faster RADPS path where available, and
+\keyword{BANDS} for the three auxiliary Standard-2-like rate bands.
 
-\section{NICER}
+\begin{ghatsconsole}
+Ghats> gh_xte, '@event.lis', 'POWER', [0,249], 1, 4096, 'rxte_full.pds'
+Ghats> gh_xte, '@event.lis', 'FFT',   [0,13],  1, 4096, 'rxte_soft.fft'
+\end{ghatsconsole}
 
-Placeholder for \routine{gh_nicer}.
+For RXTE/PCA PDS products, GHATS can store and later use PCA-specific
+information relevant to Poisson-noise estimates.  The standard PDS values
+written by the usual production path are in Leahy normalization.  The
+\texttt{.fft} products store raw complex Fourier amplitudes; normalizations
+are applied by later analysis routines.
 
-\section{Einstein Probe}
+\section{Event-List Missions}
 
-Placeholder for \routine{gh_ep}.
+Several newer routines follow the same event-list template:
+\routine{gh_nicer}, \routine{gh_ep}, \routine{gh_nustar}, \routine{gh_xmm},
+\routine{gh_swift}, and \routine{gh_ixpe}.  Their common command-line form is:
 
-\section{NuSTAR, XMM, Swift, IXPE, AstroSat, and Huiyan}
+\begin{ghatsconsole}
+Ghats> gh_nicer, infile, outtype, channels, treb, npds, outfile
+\end{ghatsconsole}
 
-Placeholder for the remaining PDS/FFT producer routines.
+The most important mission-dependent details are the event time column, the
+channel column, the native time system, and the default auxiliary bands.  The
+routine help should be checked before first use:
+
+\begin{ghatsconsole}
+Ghats> gh_nicer, /help
+Ghats> gh_ep, /help
+\end{ghatsconsole}
+
+Examples:
+
+\begin{ghatsconsole}
+Ghats> gh_nicer, 'ni_clean.evt', 'FFT', [30,1200], 10000, 32768, 'ni.fft'
+Ghats> gh_ep, 'fxt_clean.fits', 'POWER', [0,1023], 1, 4096, 'fxt.pds'
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+\routine{gh_nicer} has the keyword \keyword{NONOISYDET} for NICER-specific
+noisy-detector filtering.  This is not a generic event-list option and is not
+used by \routine{gh_ep}.
+\end{ghatsnote}
+
+\section{AstroSat and Huiyan/HXMT}
+
+AstroSat and Huiyan/HXMT have mission-specific front ends because their data
+layouts and detector selections differ from the simpler event-list template.
+The output products, however, are ordinary GHATS \texttt{.pds} and
+\texttt{.fft} files and can be read by the same downstream routines.
+
+For AstroSat:
+
+\begin{ghatsconsole}
+Ghats> gh_laxpc, infile, outtype, channels, treb, npds, outfile
+Ghats> gh_laxpc_misra, infile, outtype, channels, units, layers, treb, npds, outfile
+Ghats> gh_czti, infile, outtype, channels, treb, npds, outfile
+\end{ghatsconsole}
+
+For Huiyan/HXMT:
+
+\begin{ghatsconsole}
+Ghats> gh_huiyan, infile, outtype, channels, treb, npds, outfile
+Ghats> gh_huiyan_le, infile, outtype, channels, treb, npds, outfile
+Ghats> gh_huiyan_me, infile, outtype, channels, treb, npds, outfile
+Ghats> gh_huiyan_he, infile, outtype, channels, treb, npds, outfile
+\end{ghatsconsole}
+
+Use the routine-specific \keyword{HELP} output for the exact channel,
+detector, unit, and layer arguments.
+
+\section{ASCII Light Curves}
+
+\routine{gh_ascii_lcfft} is a contributed routine for producing a GHATS
+\texttt{.pds} or \texttt{.fft} file from an ASCII light curve with columns
+
+\begin{ghatsconsole}
+time(s)   counts_or_rate   error
+\end{ghatsconsole}
+
+The error column is accepted for compatibility with common light-curve
+formats, but is not used in the Fourier calculation.  By default, the second
+column is interpreted as counts per original light-curve bin.  If it is a
+count rate, use \keyword{RATE}.
+
+\begin{ghatsconsole}
+Ghats> gh_ascii_lcfft, 'lc.txt', 'POWER', 1, 4096, 'lc.pds', dt=0.016d0
+Ghats> gh_ascii_lcfft, 'lc_rate.txt', 'FFT', 1, 8192, 'lc.fft', $
+       dt=0.001d0, /rate
+\end{ghatsconsole}
+
+The routine detects gaps in the input time column and does not Fourier
+transform across them.  Rows with non-finite times or rates are treated as
+boundaries rather than interpolated over.
+
+\section{After Production}
+
+After making a product, inspect it before using it in later analysis:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'event.pds'
+Ghats> ghats_all, 'event.pds'
+\end{ghatsconsole}
+
+For \texttt{.fft} files, \routine{gh_info} is the appropriate header check.
+\routine{ghats_all} can print header information from FFT products, but its
+summary plots are designed for PDS files.
+
+The main downstream readers are:
+
+\begin{itemize}
+\item \routine{ghx}, to read and average \texttt{.pds} products;
+\item \routine{ghx_fft}, to read and average \texttt{.fft} products;
+\item \routine{gh_licu}, to extract the stored light curve;
+\item \routine{gh_cs} and related cross-spectral routines, to work from
+  matching FFT products.
+\end{itemize}
+
+For the exact binary layout, frequency convention, FFT sign convention, and
+normalization details, see Appendix~\ref{app:file-formats}.

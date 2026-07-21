@@ -1,8 +1,24 @@
 \documentclass[11pt,a4paper,oneside]{book}
 
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+  \usepackage[scaled]{helvet}
+  \newcommand{\TitleThinFont}{\fontfamily{phv}\selectfont}
+  \newcommand{\TitleSansFont}{\fontfamily{phv}\selectfont}
+\else
+  \usepackage{fontspec}
+  \setsansfont{Noto Sans}
+  \newfontfamily\TitleThinFont{Noto Sans}[
+    UprightFont = * Thin,
+    BoldFont = * Light
+  ]
+  \newfontfamily\TitleSansFont{Noto Sans}[
+    BoldFont = * Bold
+  ]
+\fi
 \usepackage{microtype}
 \usepackage{geometry}
 \usepackage{graphicx}

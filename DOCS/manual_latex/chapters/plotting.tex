@@ -1,22 +1,230 @@
 \chapter{Plotting}
 
-This chapter will describe the GHATS plotting routines for PDS, light curves,
-housekeeping information, lags, and coherence.
+GHATS includes small plotting routines for the most common quick-look timing
+products.  They are intentionally simple: the routines plot arrays that have
+already been read or computed by other GHATS commands, and they use the
+current IDL/GDL graphics device unless \keyword{PS} is requested.
+
+The typical pattern is:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, /poisson
+Ghats> gh_reb, nu, pow, powe, -100, x, y, ye
+Ghats> gh_plot_power, x, y, ye
+\end{ghatsconsole}
+
+For a first inspection of a PDS file, \routine{ghats_all} is often even
+faster because it reads the file, prints the header information, extracts the
+stored light curve, averages the PDS, and makes a summary plot.
+
+\section{Common Plot Arguments}
+
+Most plotting routines use the same optional axis limits:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power, frequency, power, power_err
+Ghats> gh_plot_power, frequency, power, power_err, x1, x2
+Ghats> gh_plot_power, frequency, power, power_err, x1, x2, y1, y2
+\end{ghatsconsole}
+
+The first form lets the routine choose both axes.  The second form fixes the
+horizontal range.  The third form fixes both horizontal and vertical ranges.
+The meaning of \param{x1,x2} and \param{y1,y2} depends on the plotted
+quantity, but the convention is always minimum then maximum.
+
+Most routines also accept \keyword{PS}.  This writes a PostScript file in the
+current directory and then restores the previous graphics device.  The output
+filename is fixed by the routine, for example \texttt{gh\_power.ps} for
+\routine{gh_plot_power}.
 
 \section{PDS Plots}
 
-Placeholder for:
-\begin{itemize}
-\item \routine{gh_plot_power}
-\item \routine{gh_plot_nupower}
-\item \routine{gh_oplot_power}
-\item \routine{gh_oplot_nupower}
-\end{itemize}
+\routine{gh_plot_power} plots \(P(f)\) in log-log form:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power, frequency, power, power_err
+Ghats> gh_plot_power, frequency, power, power_err, 0.1, 64.0
+Ghats> gh_plot_power, frequency, power, power_err, 0.1, 64.0, 1.0e-4, 10.0
+\end{ghatsconsole}
+
+The arguments are:
+
+\begin{description}
+\item[\param{frequency}] Frequency array, in Hz.
+\item[\param{power}] Power array.
+\item[\param{power_err}] Error array for the power.
+\item[\param{x1,x2}] Optional frequency range to plot.
+\item[\param{y1,y2}] Optional power range to plot.
+\end{description}
+
+Only positive power values are plotted, because the display is logarithmic in
+the vertical direction.  This matters after Poisson subtraction: bins with
+zero or negative powers are silently omitted from the log-log plot.
+
+\routine{gh_plot_nupower} plots \(fP(f)\) instead:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_nupower, frequency, power, power_err
+Ghats> gh_plot_nupower, frequency, power, power_err, 0.1, 64.0
+\end{ghatsconsole}
+
+The input power and error arrays are multiplied by frequency before plotting.
+The optional \param{y1,y2} range is therefore a range in \(fP(f)\), not in
+\(P(f)\).
+
+\begin{ghatsnote}
+\routine{gh_plot_power} and \routine{gh_plot_nupower} do not change the
+input arrays.  The multiplication by frequency in \routine{gh_plot_nupower}
+is only used for the plotted values.
+\end{ghatsnote}
+
+\section{Overplotting PDS}
+
+The overplot routines add another spectrum to the current plot:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power, nu1, pow1, err1
+Ghats> gh_oplot_power, nu2, pow2, err2
+\end{ghatsconsole}
+
+For \(fP(f)\):
+
+\begin{ghatsconsole}
+Ghats> gh_plot_nupower, nu1, pow1, err1
+Ghats> gh_oplot_nupower, nu2, pow2, err2
+\end{ghatsconsole}
+
+The first command establishes the axes; the overplot command uses the existing
+graphics window.  Therefore the arrays added with \routine{gh_oplot_power}
+or \routine{gh_oplot_nupower} should lie inside the current axis ranges, or
+they will not be visible.
 
 \section{Light-Curve Plots}
 
-Placeholder for \routine{gh_plot_licu} and \routine{gh_plot_licu_nogaps}.
+\routine{gh_plot_licu} plots a light curve as rate versus time:
+
+\begin{ghatsconsole}
+Ghats> gh_licu, 'event.pds', time, rate
+Ghats> gh_plot_licu, time, rate
+Ghats> gh_plot_licu, time, rate, 0.0, 1000.0
+Ghats> gh_plot_licu, time, rate, 0.0, 1000.0, 200.0, 500.0
+\end{ghatsconsole}
+
+Here \param{x1,x2} are times in seconds and \param{y1,y2} are count-rate
+limits.  The routine draws a stepped light curve without error bars.
+
+\routine{gh_plot_licu_nogaps} uses the same rate array but plots it against
+PDS index rather than time:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_licu_nogaps, time, rate
+\end{ghatsconsole}
+
+The \param{time} array is used only to identify gaps.  The horizontal axis is
+the PDS index, starting from 0, and vertical dashed lines mark gaps inferred
+from the spacing of adjacent times.  This is useful when the real elapsed time
+contains long gaps that would compress the good intervals into narrow regions
+of the plot.
+
+In short, the ordinary light-curve plot shows elapsed seconds, while the
+no-gaps plot shows the sequence of PDS transforms and marks where gaps
+occurred.
+
+\section{Housekeeping Plots}
+
+\routine{gh_plot_hk_xte} is a convenience plot for RXTE/PCA housekeeping
+series stored in a GHATS PDS file:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_hk_xte, 'event.pds'
+Ghats> gh_plot_hk_xte, 'event.pds', /ps
+\end{ghatsconsole}
+
+Internally it calls \routine{gh_hk_xte}, then plots the VLE rate, number of
+active detectors, and stored Poisson level as a multi-panel diagnostic.  With
+\keyword{PS}, the output file is \texttt{gh\_hk\_xte.ps}.
 
 \section{Cross-Spectral Plots}
 
-Placeholder for lag and coherence plotting routines.
+Cross-spectral analysis routines return arrays that can be plotted directly.
+For lag spectra, use \routine{gh_plot_lag}:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_lag, frequency, lag, lag_err
+Ghats> gh_plot_lag, frequency, lag, lag_err, 0.1, 64.0
+Ghats> gh_plot_lag, frequency, lag, lag_err, 0.1, 64.0, -1.0, 1.0, /lin
+\end{ghatsconsole}
+
+By default, the routine labels the vertical axis as phase lag in radians.  If
+\keyword{TIME} is set, the vertical axis is labelled as time lag in seconds:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_lag, frequency, time_lag, time_lag_err, /time, /lin
+\end{ghatsconsole}
+
+The horizontal axis is logarithmic.  The keyword \keyword{LIN} keeps the
+vertical axis linear.  Without \keyword{LIN}, the routine requests a
+logarithmic vertical axis, which is only appropriate when the plotted lag
+values are positive.  A horizontal zero-lag line is drawn for reference.  The
+\keyword{HYP} keyword plots the hyperbolic sine of the lag values, a legacy
+option intended to give a log-like display when negative lags are present.
+
+For coherence spectra, use \routine{gh_plot_coh}:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_coh, frequency, coherence, coherence_err
+Ghats> gh_plot_coh, frequency, coherence, coherence_err, 0.1, 64.0, 0.0, 1.1
+\end{ghatsconsole}
+
+The default vertical range is 0 to 1.1.  The horizontal axis is logarithmic,
+and error bars are drawn using the IDL or GDL plotting helper available in the
+current session.
+
+\begin{ghatsnote}
+\routine{gh_plot_lag} and \routine{gh_plot_coh} currently do not have
+\keyword{HELP} screens.  The calling sequences above follow the routine
+interfaces in the code.
+\end{ghatsnote}
+
+\section{PostScript Output}
+
+For plotting routines that support it, \keyword{PS} writes a file with a fixed
+name:
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}}
+\toprule
+Routine & PostScript file \\
+\midrule
+\endhead
+\routine{gh_plot_power} & \texttt{gh\_power.ps} \\
+\routine{gh_plot_nupower} & \texttt{gh\_nupower.ps} \\
+\routine{gh_plot_licu} & \texttt{gh\_licu.ps} \\
+\routine{gh_plot_licu_nogaps} & \texttt{gh\_licu.ps} \\
+\routine{gh_plot_hk_xte} & \texttt{gh\_hk\_xte.ps} \\
+\routine{gh_plot_lag} & \texttt{gh\_lag.ps} \\
+\routine{gh_plot_coh} & \texttt{gh\_coh.ps} \\
+\bottomrule
+\end{longtable}
+
+Because these filenames are fixed, running the same plotting command again in
+the same directory overwrites the previous PostScript file.  Rename important
+plots after making them if several versions need to be kept.
+
+\section{A Compact Plotting Workflow}
+
+A common exploratory sequence is:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'event.pds'
+Ghats> gh_licu, 'event.pds', time, rate
+Ghats> gh_plot_licu, time, rate
+Ghats> ghx, 'event.pds', nu, pow, powe, poisson=[400,800]
+Ghats> gh_reb, nu, pow, powe, -100, x, y, ye
+Ghats> gh_plot_power, x, y, ye
+Ghats> gh_plot_nupower, x, y, ye
+\end{ghatsconsole}
+
+For publication-quality figures, these quick-look plots are often the starting
+point rather than the final product.  They are most useful for checking that
+the selected transforms, frequency range, noise subtraction, and rebinning are
+reasonable before carrying the arrays into more specialised plotting scripts.

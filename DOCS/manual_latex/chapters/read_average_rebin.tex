@@ -1,21 +1,348 @@
 \chapter{Reading, Averaging, and Rebinning}
 
-This chapter will cover routines that read GHATS timing products and create
-averaged or rebinned products for analysis.
+Once a GHATS timing product has been written, the next step is usually to
+read selected transforms, average them, subtract or estimate the noise level
+when appropriate, and optionally rebin the result.  This chapter describes
+the routines used for that stage:
 
-\section{\routine{ghx}}
+\begin{itemize}
+\item \routine{ghx}, for \texttt{.pds} files;
+\item \routine{ghx_fft}, for \texttt{.fft} files;
+\item \routine{gh_reb}, for linear or logarithmic rebinning;
+\item auxiliary readers such as \routine{gh_licu}, \routine{gh_colors}, and
+  \routine{gh_hk_xte}.
+\end{itemize}
 
-Placeholder for PDS reading and averaging.
+The routines in this chapter do not remake Fourier transforms.  They read
+products already written by the production routines described in the previous
+chapter.
 
-\section{\routine{ghx_fft}}
+\section{\routine{ghx}: Averaging PDS Files}
 
-Placeholder for FFT reading and averaging.
+\routine{ghx} is the main routine for reading a GHATS \texttt{.pds} file and
+returning an averaged power spectrum:
 
-\section{\routine{gh_reb}}
+\begin{ghatsconsole}
+Ghats> ghx, 'file.pds', frequency, power, power_err
+\end{ghatsconsole}
 
-Placeholder for linear and logarithmic rebinning.
+The output arrays are:
 
-\section{Light Curves and Housekeeping}
+\begin{description}
+\item[\param{frequency}] Frequency array, in Hz.
+\item[\param{power}] Averaged power spectrum.
+\item[\param{power_err}] Error estimate for the averaged power spectrum.
+\end{description}
 
-Placeholder for \routine{gh_licu}, \routine{gh_nspectra},
-\routine{gh_colors}, \routine{gh_getvle}, and \routine{gh_hk_xte}.
+By default, all transforms in the file are selected and no noise level is
+subtracted:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe
+  64 power spectra selected
+WARNING: raw PDS returned; no noise level subtracted.
+Use /POISSON, POISSON=[f1,f2], or MANUAL_POI=p to subtract one.
+\end{ghatsconsole}
+
+This warning is intentional.  It reminds the user that the returned PDS is the
+raw average from the file unless a noise prescription is requested.
+
+\section{Selecting Transforms}
+
+The same selection keywords are used by \routine{ghx} and \routine{ghx_fft}:
+
+\begin{description}
+\item[\param{INDEX=[i1,i2]}] Select transforms with internal indices between
+  \texttt{i1} and \texttt{i2}.
+\item[\param{TIME=[t1,t2]}] Select transforms whose start and end times fall
+  inside the interval \texttt{t1--t2}, in seconds from the file start.
+\item[\param{RATE=[r1,r2]}] Select transforms whose stored count rate lies in
+  the interval \texttt{r1--r2}.
+\item[\param{SEL=sel}] Select an explicit array of transform indices.
+\end{description}
+
+Selections can be combined:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, time=[0,500], $
+       rate=[300,10000], index=[0,31]
+\end{ghatsconsole}
+
+\begin{ghatsnote}
+In the current \routine{ghx} and \routine{ghx_fft} code, \param{INDEX} and
+\param{SEL} are compared with the internal transform counter, which starts
+from 0.  Thus \texttt{INDEX=[0,9]} selects the first ten transforms.
+\end{ghatsnote}
+
+If no transforms satisfy the selection, \routine{ghx} prints a warning and
+the returned arrays should not be used.
+
+\section{Reading Several Compatible PDS Files}
+
+\routine{ghx} also accepts a metafile as input.  The filename must begin with
+\texttt{@}, and the metafile must contain one \texttt{.pds} filename per line:
+
+\begin{ghatsconsole}
+$ ls obs*_soft.pds > pds_files.lis
+Ghats> ghx, '@pds_files.lis', nu, pow, powe, poisson=[400,800]
+\end{ghatsconsole}
+
+The files are treated as if their transforms came from a single longer PDS
+file, but only after compatibility checks.  The current checks require the
+same transform size, frequency resolution, channel range, proliferation flag,
+barycenter flag, spectral-bin layout, background flag, GHATS mode flags,
+window flag, and VLE flag.  If the files are not listed in time order,
+\routine{ghx} prints a warning and processes them sorted by the header start
+time.  If their times overlap or repeat, the routine stops.
+
+\begin{ghatsnote}
+Metafile input for \routine{ghx} is for PDS files only.  The files listed
+inside the metafile must already be GHATS \texttt{.pds} products.
+\end{ghatsnote}
+
+\section{Noise Subtraction in \routine{ghx}}
+
+\routine{ghx} supports three mutually exclusive noise-subtraction modes.
+
+\subsection{\keyword{POISSON}}
+
+With \keyword{POISSON}, \routine{ghx} computes and subtracts the legacy
+Zhang-style Poisson level:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, /poisson
+\end{ghatsconsole}
+
+This is the historical RXTE/PCA path.  It uses the count rate, VLE
+information, number of active detectors, and the transform length stored in
+the PDS product.
+
+\subsection{\param{POISSON=[f1,f2]}}
+
+With a two-element \param{POISSON} keyword, \routine{ghx} estimates a constant
+noise level from the requested frequency range and subtracts it from the whole
+PDS:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, poisson=[400,800]
+\end{ghatsconsole}
+
+The range is clipped to the available non-Nyquist frequencies.  The Nyquist
+bin is excluded from this estimate because its statistics differ from the
+other positive-frequency bins for a real time series.  If the requested range
+has no valid overlap with the PDS frequency grid, the routine stops.
+
+\subsection{\param{MANUAL_POI=p}}
+
+With \param{MANUAL_POI}, the user supplies a constant level in the input-file
+PDS units:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, manual_poi=2.0
+\end{ghatsconsole}
+
+This is useful when the noise level has been measured or fitted elsewhere.
+The value is interpreted before any optional \(rms^2\) conversion.
+
+\begin{ghatsnote}
+Use only one noise option at a time: \keyword{POISSON},
+\param{POISSON=[f1,f2]}, or \param{MANUAL_POI=p}.  The routine stops if
+more than one is requested.
+\end{ghatsnote}
+
+\section{RMS-Squared Conversion}
+
+If the \param{RMS} keyword is given, \routine{ghx} converts the PDS to
+\(rms^2\) units after the selected transforms have been averaged.  The value
+passed through \param{RMS} is the background rate:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, poisson=[400,800], rms=0.001
+\end{ghatsconsole}
+
+The routine uses the average total rate of the selected transforms and stops
+if the supplied background rate is larger than the total source-plus-background
+rate.  If a manually supplied constant noise level is used together with
+\param{RMS}, that constant must be in the original input-file PDS units, not
+in the rms-normalized units.
+
+\section{\routine{ghx_poisrange}}
+
+\routine{ghx_poisrange} is a contributed routine kept for workflows that
+estimate an empirical residual constant from a frequency range after optional
+\(rms^2\) conversion:
+
+\begin{ghatsconsole}
+Ghats> ghx_poisrange, 'event.pds', nu, pow, powe, rms=0.001, $
+       poisrange=[400,800]
+\end{ghatsconsole}
+
+The newer \routine{ghx} interface can also estimate and subtract a constant
+with \param{POISSON=[f1,f2]}.  The distinction is the order of operations:
+\routine{ghx} interprets the constant in the input PDS units before optional
+\(rms^2\) conversion, while \routine{ghx_poisrange} was written to reproduce
+the older interactive practice of estimating the residual level from an
+already rms-normalized PDS.
+
+\section{\routine{ghx_fft}: Averaging FFT Files}
+
+\routine{ghx_fft} reads a GHATS \texttt{.fft} file and averages the complex
+Fourier amplitudes:
+
+\begin{ghatsconsole}
+Ghats> ghx_fft, 'file.fft', frequency, fft, fft_err
+\end{ghatsconsole}
+
+The output \param{fft} array is complex.  It is not a power spectrum, and it
+is not normalized as Leahy or rms power.  The stored \texttt{.fft} payload is
+the raw complex Fourier amplitude written by the production routine; later
+cross-spectral routines apply the normalizations they need.
+
+The same selection keywords are available:
+
+\begin{ghatsconsole}
+Ghats> ghx_fft, 'soft.fft', nu, soft_fft, soft_fft_err, index=[0,99]
+Ghats> ghx_fft, 'hard.fft', nu, hard_fft, hard_fft_err, index=[0,99]
+\end{ghatsconsole}
+
+For cross spectra, lags, coherence, or bispectra, separate FFT files should
+have the same time resolution, transform length, frequency grid, and selected
+transform list.  If two energy bands were produced from the same input data
+with the same parameters, changing only the channel range, their transforms
+should normally correspond one-to-one.
+
+\section{\routine{gh_reb}: Rebinning Arrays}
+
+\routine{gh_reb} rebins arrays with errors:
+
+\begin{ghatsconsole}
+Ghats> gh_reb, frequency, power, power_err, irf, reb_frequency, $
+       reb_power, reb_power_err
+\end{ghatsconsole}
+
+The sign of \param{irf} selects the rebinning mode:
+
+\begin{description}
+\item[\param{irf > 0}] Linear rebinning.  Adjacent bins are combined in
+  groups set by the rebin factor.
+\item[\param{irf < 0}] Logarithmic rebinning.  For example, \texttt{irf=-20}
+  gives bins whose width grows by a factor \(\exp(1/20)\) from one bin to the
+  next.
+\end{description}
+
+The most common PDS workflow is:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', nu, pow, powe, /poisson
+Ghats> gh_reb, nu, pow, powe, -100, x, y, ye
+Ghats> gh_plot_power, x, y, ye
+\end{ghatsconsole}
+
+\routine{gh_reb} is a general array rebinning wrapper around the GHATS
+rebinning routine.  It does not read headers and does not know whether the
+input came from a PDS, a cross spectrum, or another array with errors.
+
+\section{Light Curves}
+
+\routine{gh_licu} extracts the count-rate light curve stored in a GHATS PDS
+file:
+
+\begin{ghatsconsole}
+Ghats> gh_licu, 'event.pds', times, rate
+Ghats> gh_licu, 'event.pds', times, rate, deltat=dt, mjd=mjd0
+\end{ghatsconsole}
+
+The output \param{times} array is in seconds from the file start.  The
+\param{rate} array contains one rate value per transform.  The keyword output
+\param{DELTAT} returns the time spacing between adjacent light-curve points,
+and \param{MJD} returns the starting MJD from the file header.
+
+\begin{ghatsnote}
+\routine{gh_licu} reads the light curve stored in a PDS product.  It is not a
+general event-file light-curve extractor.
+\end{ghatsnote}
+
+\section{Counting Transforms}
+
+\routine{gh_nspectra} reads the number of transforms stored in the PDS header:
+
+\begin{ghatsconsole}
+Ghats> gh_nspectra, 'event.pds', ntrafos
+Ghats> print, ntrafos
+\end{ghatsconsole}
+
+This is a quick way to check how many spectra are available before deciding on
+\param{INDEX}, \param{TIME}, or \param{RATE} selections.
+
+\section{Colors and Housekeeping}
+
+\routine{gh_colors} reads the three auxiliary rate curves stored in a PDS
+file and returns two hardness ratios:
+
+\begin{ghatsconsole}
+Ghats> gh_colors, 'event.pds', times, hr1, hr2, rate1, rate2, rate3
+\end{ghatsconsole}
+
+The rates correspond to the three channel bands requested during PDS/FFT
+production with \keyword{BANDS}.  The hardness ratios are:
+
+\[
+  hr1 = \frac{rate2}{rate1}, \qquad
+  hr2 = \frac{rate3}{rate1}.
+\]
+
+For RXTE/PCA products, \routine{gh_hk_xte} reads housekeeping-like series
+stored with each transform:
+
+\begin{ghatsconsole}
+Ghats> gh_hk_xte, 'event.pds', times, vle, ndet, poiss
+\end{ghatsconsole}
+
+The outputs are time, VLE rate per detector, number of active detectors, and
+the Poisson level stored for each transform.  The helper routine
+\routine{gh_getvle} reads the RXTE/PCA VLE time parameter directly from an
+FH5a housekeeping file:
+
+\begin{ghatsconsole}
+Ghats> gh_getvle, 'FH5a_file', i_vle, /nodialog
+\end{ghatsconsole}
+
+\section{Dynamic PDS Extraction}
+
+\routine{gh_dyn} reads a PDS file into a time-frequency image:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'event.pds', time, rate, frequency, dynimage
+Ghats> gh_dyn, 'event.pds', time, rate, frequency, dynimage, $
+       index=[0,99], frebin=-100, trebin=4
+\end{ghatsconsole}
+
+The output \param{dynimage} is a dynamic PDS, with one axis corresponding to
+time and the other to frequency after optional rebinning.  The full discussion
+of dynamic spectra and FITS export is in Chapter~\ref{chap:dynamic-pds}.
+
+\section{A Typical PDS Preparation Sequence}
+
+A compact sequence for making an analysis-ready average PDS is:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'event.pds'
+Ghats> gh_licu, 'event.pds', time, rate
+Ghats> ghx, 'event.pds', nu, pow, powe, poisson=[400,800], $
+       rate=[300,10000]
+Ghats> gh_reb, nu, pow, powe, -100, x, y, ye
+Ghats> gh_plot_power, x, y, ye
+\end{ghatsconsole}
+
+For an FFT-based analysis, the analogous first check is:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'soft.fft'
+Ghats> gh_info, 'hard.fft'
+Ghats> ghx_fft, 'soft.fft', nu, soft_fft, soft_fft_err
+Ghats> ghx_fft, 'hard.fft', nu, hard_fft, hard_fft_err
+\end{ghatsconsole}
+
+In practice, \routine{ghx_fft} is mostly a diagnostic reader.  Cross-spectral
+and bispectral routines normally read the FFT products themselves so that
+they can apply the GHATS conventions consistently.

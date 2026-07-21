@@ -1,11 +1,110 @@
 \chapter{Introduction}
 
-\ghats{} is the General High-Energy Aperiodic Timing Software package.
+\ghats{} is the General High-Energy Aperiodic Timing Software package.  It is a
+set of IDL/GDL routines for the production and analysis of high-energy timing
+products, with particular emphasis on aperiodic variability and Fourier timing.
+The first part of this introduction preserves the motivation and history of the
+original manual written by Tomaso M. Belloni.  The final section records the new
+start of the project after release 3.2.0 and the beginning of the 3.3.0 line.
 
-This chapter will contain the converted introduction, motivation, and overview
-of the design choices of the original manual.
+\section{The Need for a Timing Package}
 
-\begin{ghatsnote}
-Conversion placeholder. Use the Word document as the text source and the PDF
-as the visual reference.
-\end{ghatsnote}
+The long-living RossiXTE mission was aimed at observing time-variable phenomena
+from X-ray sources.  Its main instrument, a large proportional counter with large
+collecting area, high time resolution, good calibration, and well understood
+dead-time effects, was designed for the study of fast variability.
+
+The XRONOS package distributed by NASA/HEASARC provides tools for the timing
+analysis of periodic phenomena such as pulsars.  For aperiodic timing analysis
+of RXTE data, however, the community did not have a comprehensive and efficient
+package.  Each group was therefore left to its own devices and had to develop a
+custom set of tools.
+
+\section{The Background Behind \ghats}
+
+At INAF-OAB, Tomaso Belloni started writing a package devoted to RXTE/PCA data.
+The HEXTE instrument, although called the High Energy X-ray Timing Experiment,
+is almost unusable for the kind of timing analysis for which this software was
+developed.  The philosophy behind the package can be summarized in two points.
+
+First, the program had to work directly from RXTE raw files, without forcing the
+user to produce light curves before the analysis.  In other words, the program
+itself would accumulate its own light curves, which would be discarded at the
+end of the production step.
+
+Second, Fourier timing analysis is naturally divided into two separate tasks.
+The first is the production of Power Density Spectra (PDS) or Fast Fourier
+Transforms (FFT).  This is an almost non-interactive process: the user supplies
+the input parameters and the program delivers the final product.  Some
+interaction remains necessary because the possible parameter ranges depend on
+the specific data type and can only be known after reading the input files.  The
+second task is the analysis of the products: reading PDS or FFT files,
+manipulating them, plotting them, fitting them, and comparing different timing
+quantities.  This second task is highly interactive.
+
+Given these starting points, the best solution was to sacrifice some speed and
+write the software in an integrated graphical environment.  Although IDL has its
+shortcomings, it was a widely used package in high-energy astrophysics and
+provided access to useful existing libraries.  Its main disadvantage is that it
+is commercial software.  The GNU Data Language (GDL), a public-domain clone of
+IDL, has therefore always been important for the accessibility of the package.
+Although GDL was not complete when the original manual was written, it was
+already sufficiently advanced for many \ghats{} purposes.
+
+\section{A New Package with Limited Distribution}
+
+From this work, a package called MU was born.  Initially used only within the
+institute, it was later shared with selected users in Groningen, Rome, Mumbai,
+and Kolkata.  MU worked only on RXTE/PCA data and continued to do so.  The
+upcoming AstroSat mission provided the incentive to extend the software and
+adapt it to other instruments.
+
+Although the package itself was in good shape, the data format was too
+RXTE-specific and needed to be changed into something more general.  This is how
+\ghats{} was born.  Release 1.0.0 had only been used by Tomaso for testing when
+it was first released.  Users of MU recognized essentially the same software,
+with command names changed.  The changes in data format were mostly invisible
+to the user, while the extensions to other missions were added to the existing
+code base.
+
+\section{The Future}
+
+The original manual closed by saying that \ghats{} needed testing by a larger
+number of users.  In particular, the GDL version had been used only by very few
+people and would certainly benefit from broader use.  That remains part of the
+spirit of the project: the software is meant to be used, tested, corrected, and
+extended by the timing community, while preserving the definitions and file
+formats that make its products mutually compatible.
+
+\section{A New Start}
+
+Sara Motta, Federico Garcia, and Mariano Mendez used \ghats{} for several years
+and discussed many possible improvements, bugs, and extensions with Tomaso.
+They also contributed parts of some routines.  The last version of the code
+officially received from Tomaso was 3.2.0, from February 2023, about six months
+before he passed away.
+
+Since then, the Groningen copy of the code received a few small changes to
+existing routines and a number of new routines for studying the cross spectrum
+and the coherence function.  As a legacy to Tomaso's work, version 3.2.0 was
+uploaded to GitHub, and version 3.3.0 was started from it.  This is the line
+intended for further development.
+
+Besides adding those routines, the manual and the links to the necessary
+libraries were updated, instructions for installing and running \ghats{} in GDL
+were included, a \param{PYTHON} directory was added for Python-based \ghats{}
+tools, and a new walkthrough for the cross spectrum was added.
+
+We miss Tomaso, and his enthusiasm for adding things to the code whenever new
+ideas came up.  We would have very much liked to share this new step with him.
+In the meantime, we try to honour his memory by doing good work with this
+software.  We hope that new users will do the same.
+
+\section{This Edition}
+
+This LaTeX edition keeps the structure and spirit of the previous manual while
+making the text easier to update as \ghats{} evolves.  Later chapters describe
+how to produce PDS and FFT products, read and average them, make the standard
+plots, use the cross-spectral routines, create dynamic PDS products, and export
+some results for XSPEC.  The appendix records the internal GHATS file formats so
+that future tools can read and write compatible products.

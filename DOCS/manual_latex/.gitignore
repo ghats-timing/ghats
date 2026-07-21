@@ -13,3 +13,7 @@
 *.run.xml
 *.synctex.gz
 *.toc
+*~
+*~.*
+.nfs*
+(A Document Being Saved By TeXShop)/

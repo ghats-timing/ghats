@@ -1,15 +1,222 @@
 \chapter{Dynamic Power Spectra}
+\label{chap:dynamic-pds}
 
-This chapter will describe dynamic PDS extraction, FITS output, and plotting.
+A dynamic power spectrum, or spectrogram, shows how the PDS changes with
+time.  In \ghats{} this is not made directly from an event file.  The event
+file is first converted into a normal GHATS \texttt{.pds} product, and the
+dynamic-PDS routines then read the individual spectra stored in that file.
+
+The basic workflow is:
+
+\begin{ghatsconsole}
+Ghats> gh_nicer, 'event.evt', 'POWER', [30,1200], 10000, 32768, 'event.pds'
+Ghats> gh_dyn, 'event.pds', time, rate, frequency, dynimage
+\end{ghatsconsole}
+
+or, if a FITS file and viewer are wanted:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'event.pds', 'event_dynpds.fits', frebin=-100, trebin=4, /show
+\end{ghatsconsole}
+
+\section{What Is Stored in a Dynamic PDS}
+
+\routine{gh_dyn} reads the powers already stored in a GHATS \texttt{.pds}
+file.  Each transform becomes one row in the time-frequency image before
+optional rebinning.  The output arrays are:
+
+\begin{description}
+\item[\param{time}] Time axis, in seconds from the file start, after optional
+  time rebinning.
+\item[\param{rate}] Count-rate curve, rebinned in the same time bins as the
+  image.
+\item[\param{frequency}] Frequency axis, in Hz, after optional frequency
+  rebinning.
+\item[\param{dynimage}] Two-dimensional power image.  The first dimension is
+  time and the second dimension is frequency.
+\end{description}
+
+The powers are the powers stored in the input \texttt{.pds} file.  The
+routine does not recompute Fourier transforms and does not subtract a Poisson
+level.  If a noise-subtracted or differently normalized view is needed, that
+step has to be handled outside \routine{gh_dyn}.
 
 \section{\routine{gh_dyn}}
 
-Placeholder for dynamic PDS extraction.
+The simplest call is:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'file.pds', time, rate, frequency, dynimage
+\end{ghatsconsole}
+
+The main optional keywords are:
+
+\begin{description}
+\item[\param{INDEX=[i1,i2]}] Select a transform-index range.
+\item[\param{FREBIN=fr}] Rebin the frequency axis.  Positive values request
+  linear rebinning.  Negative values request logarithmic rebinning, with
+  \texttt{-100} a common value for inspection plots.  The default is 1, meaning
+  no frequency rebinning.
+\item[\param{TREBIN=tr}] Rebin the time axis linearly by this factor.  Only
+  linear time rebinning is supported.  The default is 1.
+\item[\keyword{HELP}] Print the routine help screen.
+\end{description}
+
+For example:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'file.pds', time, rate, frequency, dynimage, $
+       index=[0,199], frebin=-100, trebin=4
+\end{ghatsconsole}
+
+This reads the selected part of the PDS file, logarithmically rebins each PDS
+in frequency, and combines groups of four adjacent time bins.
+
+\begin{ghatsnote}
+The dynamic image is intended as a visual and exploratory product.  If an
+average PDS with errors is needed, use \routine{ghx} and \routine{gh_reb}
+rather than averaging rows of \param{dynimage} by hand.
+\end{ghatsnote}
+
+\section{Frequency Rebinning}
+
+\param{FREBIN} uses the same sign convention as other GHATS rebinning
+routines:
+
+\begin{description}
+\item[\param{FREBIN=1}] Keep the native frequency grid.
+\item[\param{FREBIN=n}, \(n>1\)] Combine neighbouring frequency bins linearly.
+\item[\param{FREBIN=-n}] Rebin logarithmically, with bin widths increasing by
+  approximately \(\exp(1/n)\).
+\end{description}
+
+The frequency rebinning is applied to every PDS row independently.  The
+returned \param{frequency} array is the common rebinned frequency axis.
+
+\section{Time Rebinning}
+
+\param{TREBIN} combines adjacent spectra in time.  A value of 4, for example,
+groups four consecutive PDS rows into one output time bin:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'file.pds', time, rate, frequency, dynimage, trebin=4
+\end{ghatsconsole}
+
+The light curve returned in \param{rate} is rebinned consistently with the
+dynamic image.  Time rebinning is linear only; logarithmic time rebinning is
+not implemented.
 
 \section{\routine{gh_dyn_fits}}
 
-Placeholder for FITS output.
+\routine{gh_dyn_fits} is a convenience wrapper.  It runs \routine{gh_dyn} and
+writes the result to a FITS file:
 
-\section{Python Viewer}
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits'
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', $
+       index=[0,199], frebin=-100, trebin=4
+\end{ghatsconsole}
 
-Placeholder for \routine{GH_dyn_fits_tk.py}.
+The same \param{INDEX}, \param{FREBIN}, and \param{TREBIN} keywords are passed
+to \routine{gh_dyn}.  With \keyword{SHOW}, the routine launches the Python
+viewer after the FITS file is written:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', frebin=-100, /show
+\end{ghatsconsole}
+
+Additional viewer options can be passed as a string through
+\param{ARGUMENTS}:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', /show, $
+       arguments='--linear -fmin 0.1 -fmax 50 -pmin 1.5 -pmax 4.0'
+\end{ghatsconsole}
+
+\section{Dynamic-PDS FITS Layout}
+
+The current FITS file written by \routine{gh_dyn_fits} is simple and uses HDU
+order rather than named extensions:
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}}
+\toprule
+HDU & Contents & Meaning \\
+\midrule
+\endhead
+Primary & \param{dynima} & Dynamic PDS image. \\
+Extension 1 & \param{nu} & Frequency array in Hz. \\
+Extension 2 & \param{time} & Time array in seconds from the file start. \\
+Extension 3 & \param{rate} & Count-rate array. \\
+\bottomrule
+\end{longtable}
+
+\begin{ghatsnote}
+The current dynamic-PDS FITS writer does not add custom \texttt{EXTNAME}
+keywords or detailed axis metadata.  Readers should therefore treat the HDU
+order above as part of the current file format.
+\end{ghatsnote}
+
+\section{Python Viewer: \routine{GH_dyn_fits_tk.py}}
+
+\routine{GH_dyn_fits_tk.py} reads the FITS files written by
+\routine{gh_dyn_fits} and opens an interactive viewer:
+
+\begin{ghatsconsole}
+$ GH_dyn_fits_tk.py file_dynpds.fits
+$ GH_dyn_fits_tk.py file_dynpds.fits -fmin 0.1 -fmax 50 -pmin 1.5 -pmax 4.0
+\end{ghatsconsole}
+
+The script lives in the repository \texttt{PYTHON} directory.  To run it by
+name from the shell, or through \routine{gh_dyn_fits} with \keyword{SHOW}, the
+\texttt{PYTHON} directory should be in the shell path used by the GHATS
+session.
+
+Common viewer options include:
+
+\begin{description}
+\item[\param{-title}] Set the window title.
+\item[\param{-cmap}] Choose a Matplotlib colour map.
+\item[\param{-interp}] Choose the image interpolation method.
+\item[\param{-pmin}, \param{-pmax}] Set the colour-scale limits.
+\item[\param{-fmin}, \param{-fmax}] Set the displayed frequency range.
+\item[\param{-tmin}, \param{-tmax}] Set the displayed time range.
+\item[\param{-fh}, \param{-th}] Highlight selected frequencies or times.
+\item[\param{--linear}] Use a linear colour scale instead of the default
+  logarithmic display.
+\item[\param{--nupnu}] Display \(fP(f)\) rather than \(P(f)\).
+\item[\param{--savepdf}, \param{--savepng}] Save the figure.
+\item[\param{--noshow}] Save or prepare the figure without displaying the
+  interactive window.
+\item[\param{--showGaps}, \param{--fillGaps}] Mark or fill gaps in the time
+  axis when the viewer can infer them.
+\end{description}
+
+The full list is available from:
+
+\begin{ghatsconsole}
+$ GH_dyn_fits_tk.py -h
+\end{ghatsconsole}
+
+\section{A Compact Dynamic-PDS Workflow}
+
+A typical sequence is:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'file.pds'
+Ghats> gh_dyn, 'file.pds', time, rate, frequency, dynimage, $
+       frebin=-100, trebin=4
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', $
+       frebin=-100, trebin=4
+\end{ghatsconsole}
+
+For interactive inspection:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', $
+       frebin=-100, trebin=4, /show, $
+       arguments='-fmin 0.1 -fmax 64 --showGaps'
+\end{ghatsconsole}
+
+This keeps the GHATS data product and the visualisation step separate: the
+\texttt{.pds} file remains the authoritative timing product, while the FITS
+file is a portable image product for inspection and plotting.

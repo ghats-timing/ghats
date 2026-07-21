@@ -1,7 +1,14 @@
 \chapter{Conversion Notes}
 
 The legacy manual was authored in Apple Pages and exported to Word and PDF.
-The LaTeX version should use:
+This LaTeX version was started so that the manual can be edited, reviewed, and
+kept under version control more easily.  The conversion is not intended to
+change the scientific content of GHATS.  It is a change of source format and
+maintenance workflow.
+
+\section{Source Material}
+
+The recommended sources for future manual updates are:
 
 \begin{itemize}
 \item the Word document as the main source of recoverable text;
@@ -15,3 +22,54 @@ Do not change scientific definitions, Fourier conventions, lag sign
 conventions, normalization conventions, or file formats during manual
 conversion. Any such change must be discussed separately.
 \end{ghatsnote}
+
+\section{Editing Rules}
+
+When updating the LaTeX manual, edit one chapter or appendix at a time whenever
+possible.  This keeps the review small and makes it easier to compare the new
+text with the old manual and with the routines it describes.
+
+Routine names, filenames, keywords, and parameter names should be written with
+the GHATS macros:
+
+\begin{ghatsconsole}
+\routine{gh_cs}
+\keyword{help}
+\param{power_err}
+\end{ghatsconsole}
+
+The argument should contain the literal name, with plain underscores.  Do not
+write escaped underscores inside these macros.  This keeps the source readable
+and avoids printed names such as \texttt{gh\textbackslash\_cs} in the PDF.
+
+\section{What Was Preserved}
+
+The LaTeX manual preserves the structure and tone of the legacy manual where
+possible: an introduction and installation section, a practical walkthrough
+style, command-oriented chapters, and a compact reference appendix.  The
+front matter also keeps the original spirit of the manual, including the
+revision history and the acknowledgement of Tomaso Belloni's authorship.
+
+\section{What Was Added}
+
+The new source adds material for functionality that post-dates parts of the
+legacy manual, including cross-spectral routines, dynamic-PDS FITS products,
+XSPEC export details, and the native GHATS file-format appendix.  These
+additions should remain descriptive: they document what the current routines do
+and should not silently redefine the underlying Fourier, lag, normalization, or
+file-format conventions.
+
+\section{Future Work}
+
+The remaining maintenance work is mostly editorial.  Future updates should:
+
+\begin{itemize}
+\item replace any remaining placeholders with checked text from the old manual
+      or from the current routines;
+\item keep examples runnable with the current GHATS calling sequences;
+\item update the routine directory and \routine{gh_help} text when command
+      behaviour changes;
+\item keep Appendix~\ref{app:file-formats} synchronized with the Markdown file
+      format specification or decide explicitly that the LaTeX appendix has
+      become the primary source.
+\end{itemize}

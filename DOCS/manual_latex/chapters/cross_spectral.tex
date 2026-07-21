@@ -1,19 +1,305 @@
 \chapter{Cross Spectra, Lags, and Coherence}
 
-This chapter will cover cross-spectral routines and their conventions.
+Cross-spectral analysis in \ghats{} starts from two compatible
+\texttt{.fft} files.  The two files should normally be produced from the
+same event data, with the same time bin, transform length, GTI selection,
+and start time, changing only the channel or energy selection.  The routines
+then average the complex cross spectrum and return phase or time lags,
+coherence, and, in the newer interface, the real and imaginary parts of the
+cross spectrum.
 
-\section{\routine{gh_cross}}
+The routines described here are:
 
-Placeholder for the classic lag/coherence routine.
+\begin{itemize}
+\item \routine{gh_cross}, the older lag/coherence reader;
+\item \routine{gh_cross_re_im_new}, the lower-level routine that also
+  returns the real and imaginary parts;
+\item \routine{gh_cs}, the recommended wrapper for most current work;
+\item \routine{gh_plot_lag} and \routine{gh_plot_coh}, described in the
+  previous chapter, for quick-look plots.
+\end{itemize}
 
-\section{\routine{gh_cross_re_im_new}}
+\section{Lag Sign and Basic Convention}
 
-Placeholder for real/imaginary cross-spectrum extraction.
+The first filename is the reference band and the second filename is the
+subject band:
 
-\section{\routine{gh_cs}}
+\begin{ghatsconsole}
+Ghats> file_ref = 'soft.fft'
+Ghats> file_sub = 'hard.fft'
+\end{ghatsconsole}
 
-Placeholder for dead-time corrected cross-spectrum workflows.
+Positive lags mean that the second time series lags the first.  By default
+the lag array is a phase lag in radians.  If \keyword{TLAG} is set, the
+routine divides by \(2\pi f\) and returns time lags in seconds:
 
-\section{Coherence Options}
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf
 
-Placeholder for the raw and intrinsic coherence options.
+Ghats> gh_cs, file_ref, file_sub, freq, tlag, tlag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, /tlag
+\end{ghatsconsole}
+
+The rebin factor \param{irf} follows the usual GHATS convention.  A positive
+integer rebins linearly by that number of bins.  A negative value requests
+logarithmic rebinning; \texttt{-100} is a common exploratory choice.
+
+\section{The Recommended Interface: \routine{gh_cs}}
+
+\routine{gh_cs} is the current high-level cross-spectral command.  It wraps
+\routine{gh_cross_re_im_new} and, when \param{POISSON=[f1,f2]} is given,
+uses a preliminary pass to estimate the mean real cross-spectrum contribution
+in the requested high-frequency range.  It then subtracts that constant real
+component in the final pass.
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400,800], rms1=0.001, rms2=0.001, /lowcoh
+\end{ghatsconsole}
+
+The output arrays are:
+
+\begin{description}
+\item[\param{freq}] Rebinned Fourier frequencies, in Hz.
+\item[\param{lag}] Phase lags in radians, or time lags in seconds with
+  \keyword{TLAG}.
+\item[\param{lag_err}] Lag errors.
+\item[\param{coh}] Coherence spectrum.
+\item[\param{coh_err}] Coherence errors.
+\item[\param{real}, \param{imag}] Real and imaginary parts of the averaged
+  cross spectrum.
+\item[\param{real_err}, \param{imag_err}] Errors on the real and imaginary
+  parts.
+\item[\param{modcs}] Cross-spectrum modulus,
+  \(\sqrt{\mathrm{Re}(C)^2+\mathrm{Im}(C)^2}\).
+\item[\param{modcs_err}] Error on the modulus, propagated using the empirical
+  covariance between the real and imaginary parts.
+\item[\param{mw}] Number of averaged cross vectors contributing to each
+  rebinned bin.  It is the number of selected transforms times the number of
+  native frequencies in the rebinned bin.
+\item[\param{qf}] Quality flag for the \keyword{LOWCOH} calculation.  A value
+  of 0 marks the standard high-power/high-coherence case, 2 marks the
+  low-coherence case, and 1 marks bins where the implemented conditions do not
+  allow a useful intrinsic-coherence estimate.
+\end{description}
+
+\begin{ghatsnote}
+Use \routine{gh_cs} unless you specifically need to control the two passes
+yourself.  It is less error-prone than manually measuring and subtracting the
+constant real component.
+\end{ghatsnote}
+
+\section{Compatible FFT Files and Selections}
+
+The routines check that the two FFT files are compatible.  They require the
+same time resolution, Fourier length, start time, and number of transforms.
+The observatory and target keywords must also agree.  The current
+\routine{gh_cross_re_im_new} code warns, but does not stop, if the
+instrument strings differ.
+
+The selection keywords are the same style as in the PDS/FFT readers:
+
+\begin{description}
+\item[\param{INDEX=[i1,i2]}] Select an internal transform-index range.
+\item[\param{TIME=[t1,t2]}] Select transforms by time range.
+\item[\param{RATE=[r1,r2]}] Select transforms by stored count-rate range.
+\item[\param{SEL=sel}] Select an explicit array of transform indices.
+\end{description}
+
+The selected transform list should match between the two FFT files.  If the
+files were produced from the same data with the same production parameters,
+the transform numbers should normally correspond one-to-one.
+
+\section{Noise Prescriptions for Coherence}
+
+\routine{gh_cs} and \routine{gh_cross_re_im_new} distinguish raw measured
+coherence from intrinsic coherence.  The choice is explicit.
+
+\subsection{\param{POISSON=[f1,f2]}}
+
+\param{POISSON=[f1,f2]} estimates the PDS noise levels from a frequency range
+and uses them in the intrinsic-coherence denominator.  In \routine{gh_cs},
+the same frequency range is also used to estimate the constant real
+cross-spectrum contribution that is subtracted from the real part:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400,800]
+\end{ghatsconsole}
+
+The requested range is clipped internally to available non-Nyquist
+frequencies when necessary.  The Nyquist bin is excluded from the noise
+estimate and from the real-part correction.
+
+\subsection{\param{MANUAL_POI=[p1,p2]}}
+
+\param{MANUAL_POI=[p1,p2]} supplies fixed PDS noise levels for the two input
+bands:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       manual_poi=[2.01,2.03]
+\end{ghatsconsole}
+
+The two constants are interpreted in the input-file PDS units, before any
+\param{RMS1}/\param{RMS2} conversion.  This option affects the coherence
+calculation only; it does not apply a real-part correction to the cross
+spectrum.
+
+\subsection{\keyword{RAWCOH}}
+
+\keyword{RAWCOH} returns measured coherence.  The observed PDS are used in
+the denominator and no Poisson or noise correction is applied:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, /rawcoh
+\end{ghatsconsole}
+
+This is mutually exclusive with \param{POISSON}, \param{MANUAL_POI}, and
+\keyword{LOWCOH}.
+
+\begin{ghatsnote}
+If none of \param{POISSON}, \param{MANUAL_POI}, or \keyword{RAWCOH} is
+given, RXTE/PCA data use the historical Zhang-style Poisson correction.
+For other instruments the routine returns raw coherence and prints a warning
+suggesting \param{POISSON=[f1,f2]} or \param{MANUAL_POI=[p1,p2]} for
+intrinsic coherence.
+\end{ghatsnote}
+
+\section{The \keyword{LOWCOH} Option}
+
+\keyword{LOWCOH} changes the coherence-error calculation.  It uses the
+Vaughan--Nowak low-measured-coherence formalism where the implemented
+conditions indicate that the ordinary high-coherence approximation is not the
+appropriate one.  The returned \param{qf} array records which path was used
+for each frequency bin.
+
+Some bins can fall outside the implemented useful range.  In that case the
+routine marks the corresponding internal error term as undefined.  In IDL this
+can print:
+
+\begin{ghatsconsole}
+% Program caused arithmetic error: Floating illegal operand
+\end{ghatsconsole}
+
+When it appears immediately after a \keyword{LOWCOH} run, this message is
+normally the result of marking those undefined bins.  Other floating-point
+messages should still be investigated.
+
+\section{RMS Units for the Cross Spectrum}
+
+Without \param{RMS1} and \param{RMS2}, the returned real and imaginary parts
+of the cross spectrum are in the native Leahy-like units used internally by
+the FFT products.  If both background rates are supplied, the routine converts
+\param{real}, \param{imag}, their errors, and the modulus to rms units:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400,800], rms1=0.001, rms2=0.001
+\end{ghatsconsole}
+
+Both background rates must be supplied together.  The first value corresponds
+to the first FFT file and the second value to the second FFT file.
+
+\section{Rotating the Cross Vector}
+
+The \keyword{ROTATE} keyword rotates the returned real and imaginary parts of
+the cross spectrum by \(\pi/4\):
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400,800], /rotate
+\end{ghatsconsole}
+
+This can be useful for fitting the real and imaginary parts when the
+unrotated imaginary part is small or changes sign.  The rotation does not
+change the modulus, and it does not change the returned lag or coherence
+arrays.  If the rotated real and imaginary parts are fitted later, the same
+rotation must be included when comparing the model to those fitted
+components.
+
+\section{Using \routine{gh_cross_re_im_new} Directly}
+
+\routine{gh_cross_re_im_new} exposes the lower-level calculation:
+
+\begin{ghatsconsole}
+Ghats> gh_cross_re_im_new, file_ref, file_sub, freq, lag, lag_err, $
+       coh, coh_err, -100, real, real_err, imag, imag_err, $
+       modcs, modcs_err, mw, qf
+\end{ghatsconsole}
+
+It is useful when the real-part correction has to be controlled manually.
+For example:
+
+\begin{ghatsconsole}
+Ghats> gh_cross_re_im_new, file_ref, file_sub, freq, lag, lag_err, $
+       coh, coh_err, -100, real, real_err, imag, imag_err, $
+       modcs, modcs_err, mw, qf
+Ghats> w = where(freq ge 400 and freq le 800)
+Ghats> poivalue = mean(real[w])
+Ghats> gh_cross_re_im_new, file_ref, file_sub, freq, lag, lag_err, $
+       coh, coh_err, -100, real, real_err, imag, imag_err, $
+       modcs, modcs_err, mw, qf, poivalue=poivalue
+\end{ghatsconsole}
+
+For ordinary use, the \param{POISSON=[f1,f2]} option in \routine{gh_cs}
+performs this two-pass procedure automatically.
+
+\section{The Older \routine{gh_cross} Routine}
+
+\routine{gh_cross} reads two compatible FFT files and returns only frequency,
+lag, lag error, coherence, and coherence error:
+
+\begin{ghatsconsole}
+Ghats> gh_cross, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, -100
+\end{ghatsconsole}
+
+It is retained for older workflows.  New analyses that need the real and
+imaginary parts, rms conversion, rotation, the modulus, or the current raw and
+intrinsic coherence choices should use \routine{gh_cs} or
+\routine{gh_cross_re_im_new}.
+
+\section{Writing Cross-Spectral Products for XSPEC}
+
+The arrays returned by \routine{gh_cs} can be written as simple OGIP-style
+PHA/RMF pairs using \routine{gh_xspec}:
+
+\begin{ghatsconsole}
+Ghats> gh_xspec, freq, real, real_err, 'real_soft_hard'
+Ghats> gh_xspec, freq, imag, imag_err, 'imag_soft_hard'
+Ghats> gh_xspec, freq, lag,  lag_err,  'plag_soft_hard'
+Ghats> gh_xspec, freq, coh,  coh_err,  'cohe_soft_hard'
+Ghats> gh_xspec, freq, modcs, modcs_err, 'mod_soft_hard'
+\end{ghatsconsole}
+
+This is a file-format conversion step.  It does not refit, rebin, or
+renormalize the arrays; it writes the values and errors that were passed to
+it.
+
+\section{A Compact Workflow}
+
+A typical current workflow is:
+
+\begin{ghatsconsole}
+Ghats> gh_nicer, 'event.evt', 'FFT', [30,200], 10000, 32768, 'soft.fft'
+Ghats> gh_nicer, 'event.evt', 'FFT', [201,1200], 10000, 32768, 'hard.fft'
+
+Ghats> gh_cs, 'soft.fft', 'hard.fft', freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400,800], rms1=0.001, rms2=0.001, /lowcoh
+
+Ghats> gh_plot_lag, freq, lag, lag_err, /lin
+Ghats> gh_plot_coh, freq, coh, coh_err
+\end{ghatsconsole}
+
+If the reference band includes the subject band, a real-part correction is
+especially important because overlapping photons introduce partial
+correlation.  In that case \routine{gh_cs} with \param{POISSON=[f1,f2]} is
+the preferred starting point.

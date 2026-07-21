@@ -1,12 +1,120 @@
 \chapter{Installation and Dependencies}
 
-This chapter will describe installation, required IDL/GDL libraries, shell
-environment setup, and paths.
+\section{The Package}
+
+Originally, the \ghats{} package could be obtained from INAF-OAB and was not
+distributed broadly.  This was because Tomaso did not have the resources to
+support the software for a large community.  From version 3.3.0, the code is
+available from the GitHub repository so that the community can use it, test it,
+and contribute fixes or contributed routines on a development branch.
+
+\section{Unpacking}
+
+You can unpack or clone the package in your preferred directory.  The
+IDL/GDL part of \ghats{} is distributed as source code, so the tree is made of
+ASCII routines rather than compiled binaries.  A typical checkout contains the
+core directories
+
+\begin{itemize}
+  \item \param{FFT}: routines used in FFT and PDS production;
+  \item \param{ANALYSIS}: routines for interactive analysis of GHATS products;
+  \item \param{CROSS_ANALYSIS}: routines dedicated to cross spectra, lags, and
+        coherence;
+  \item \param{CONTRIBUTED}: contributed routines;
+  \item \param{PYTHON}: Python-based GHATS tools, including the command-line
+        helper directory;
+  \item \param{DOCS}: documentation and manual sources.
+\end{itemize}
+
+The tree also contains mission-specific directories, for example
+\param{NICER}, \param{NuSTAR}, \param{Swift}, \param{XMM}, \param{IXPE},
+\param{ASTROSAT}, \param{Huiyan}, and \param{Einstein_Probe}.  These contain
+the routines that know how to read the native event products of the corresponding
+instruments and produce GHATS-format PDS or FFT files.
+
+If your local installation includes launcher scripts such as \param{ghats} for
+IDL or \param{gghats} for GDL, put the one you use in a directory that is in your
+shell \param{PATH}, and make it executable.  Otherwise, the same setup can be
+done directly in your shell by defining the environment variables described
+below and then starting IDL or GDL.
 
 \section{Software Dependencies}
 
-Placeholder for the dependency list from the current manual.
+You need the following software and libraries installed:
+
+\begin{enumerate}
+  \item An updated and running version of IDL or GDL.  If you use a precompiled
+        GDL for your architecture, you may still need the source distribution,
+        because many procedures are external.  GDL can be installed following
+        the instructions at
+        \url{https://github.com/gnudatalanguage/gdl/wiki/GDL-on-Linux}.
+  \item An updated version of the IDL Astronomy User's Library:
+        \url{https://asd.gsfc.nasa.gov/archive/idlastro/}.
+  \item An updated version of Craig Markwardt's IDL library:
+        \url{https://pages.physics.wisc.edu/~craigm/idl/idl.html}.
+\end{enumerate}
+
+Not every routine in those libraries is required by every GHATS command, but
+they provide many utilities that the package expects to have available.
 
 \section{Environment Setup}
 
-Placeholder for shell setup examples.
+To run \ghats{}, your shell must know where the repository is, where IDL or GDL
+is installed, and where the required IDL libraries are.  The key variables are
+\param{MU_PATH}, \param{IDL_STARTUP}, \param{IDL_DIR}, and \param{IDL_PATH}.
+
+For a Bourne-like shell such as \param{bash}, a typical IDL setup is
+
+\begin{ghatsconsole}
+export MU_PATH=/path/to/GHATS
+export IDL_STARTUP=$MU_PATH/ANALYSIS/ghats.pro
+export IDL_DIR=/path/to/idl
+export IDL_PATH=+$MU_PATH:+/path/to/astron.dir:+/path/to/markwardt:+$IDL_DIR/lib
+export PATH=$PATH:$IDL_DIR/bin
+export PATH=$PATH:$MU_PATH/PYTHON
+\end{ghatsconsole}
+
+Replace the paths with the locations on your machine.  The leading \param{+} in
+\param{IDL_PATH} tells IDL/GDL to search a directory and its subdirectories.
+
+For a C-shell-like shell such as \param{tcsh}, the same setup uses
+\param{setenv}:
+
+\begin{ghatsconsole}
+setenv MU_PATH /path/to/GHATS
+setenv IDL_STARTUP $MU_PATH/ANALYSIS/ghats.pro
+setenv IDL_DIR /path/to/idl
+setenv IDL_PATH +$MU_PATH:+/path/to/astron.dir:+/path/to/markwardt:+$IDL_DIR/lib
+setenv PATH ${PATH}:$IDL_DIR/bin:$MU_PATH/PYTHON
+\end{ghatsconsole}
+
+These commands can be put in your shell startup file if you want them to be
+available in every terminal session.  For example, \param{bash} users typically
+use \param{.bashrc} or \param{.bash_profile}, while \param{tcsh} users commonly
+use \param{.login}.
+
+\section{Running the Program}
+
+After the environment is set, start the appropriate interpreter or launcher.  If
+you use a launcher script, the commands are typically
+
+\begin{ghatsconsole}
+$ ghats
+\end{ghatsconsole}
+
+for IDL, or
+
+\begin{ghatsconsole}
+$ gghats
+\end{ghatsconsole}
+
+for GDL.  If you start IDL directly, the startup file should load the GHATS
+environment and change the prompt to
+
+\begin{ghatsconsole}
+Ghats>
+\end{ghatsconsole}
+
+At that point the GHATS routines can be called directly.  The following chapters
+give examples of producing PDS and FFT files, reading them back, plotting timing
+products, and using the cross-spectral tools.

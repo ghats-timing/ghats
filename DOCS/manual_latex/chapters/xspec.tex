@@ -1,11 +1,208 @@
 \chapter{XSPEC Products}
 
-This chapter will describe GHATS routines that write products for XSPEC.
+\ghats{} can export one-dimensional timing spectra to files that can be read
+by XSPEC or ISIS.  The exported product is not an X-ray energy spectrum.  It is
+a timing spectrum written in OGIP-style PHA/RMF form so that XSPEC can be used
+as a convenient fitting engine.
+
+The usual entry point is \routine{gh_xspec}.  It takes arrays already in
+memory, writes a \texttt{.pha} file containing the data and errors, and writes
+a matching diagonal \texttt{.rmf} response whose channels represent frequency
+bins.
+
+\begin{ghatsnote}
+In the XSPEC files written by \ghats{}, the ``energy'' axis is the Fourier
+frequency axis.  The numerical channel boundaries are frequency-bin boundaries,
+normally in Hz.  The files are intended for fitting timing products, not for
+spectral-response analysis.
+\end{ghatsnote}
 
 \section{\routine{gh_xspec}}
 
-Placeholder for PHA/RMF output.
+\routine{gh_xspec} writes a timing spectrum to XSPEC format:
+
+\begin{ghatsconsole}
+Ghats> gh_xspec, frequency, value, value_err, 'output_name'
+\end{ghatsconsole}
+
+This creates
+
+\begin{itemize}
+  \item \param{output_name.pha}, the PHA file containing the data values and
+        statistical errors;
+  \item \param{output_name.rmf}, the diagonal response file defining the
+        frequency bins.
+\end{itemize}
+
+The arrays are:
+
+\begin{description}
+\item[\param{frequency}] Central frequency of each bin.
+\item[\param{value}] The timing quantity to be fitted.
+\item[\param{value_err}] The statistical error on \param{value}.
+\item[\param{output_name}] Basename for the output files.  Do not include the
+  \texttt{.pha} or \texttt{.rmf} extension.
+\end{description}
+
+The input \param{value} array is assumed to be a density-like quantity on a
+frequency grid, as returned by GHATS analysis routines.  Before writing the PHA
+file, \routine{gh_xspec} multiplies each value and error by twice the
+corresponding half-bin width:
+
+\[
+  \mathrm{PHA}_i = \mathrm{value}_i \, 2\Delta f_i ,
+  \qquad
+  \sigma_{\mathrm{PHA},i} =
+  \sigma_{\mathrm{value},i} \, 2\Delta f_i .
+\]
+
+The frequency-bin boundaries written to the response are
+\[
+  f_{1,i} = f_i - \Delta f_i, \qquad
+  f_{2,i} = f_i + \Delta f_i .
+\]
+
+For the first bin, \(\Delta f\) is half the separation between the first two
+input frequencies.  For later bins, the routine reconstructs the half-bin width
+from the spacing of the frequency array.  This means that the input
+\param{frequency} array should be ordered and should describe the actual bin
+centres of the data being exported.
+
+\subsection{Common Examples}
+
+The routine can be used after reading and rebinning a PDS:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'event.pds', freq, power, power_err, -100
+Ghats> gh_xspec, freq, power, power_err, 'event_rebinned'
+\end{ghatsconsole}
+
+It can also be used for cross-spectral products returned by \routine{gh_cs}.
+For example:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err
+
+Ghats> gh_xspec, freq, real, real_err, 'real_ref_sub'
+Ghats> gh_xspec, freq, imag, imag_err, 'imag_ref_sub'
+Ghats> gh_xspec, freq, lag,  lag_err,  'plag_ref_sub'
+Ghats> gh_xspec, freq, coh,  coh_err,  'cohe_ref_sub'
+\end{ghatsconsole}
+
+The names are arbitrary, but using descriptive prefixes such as
+\texttt{real}, \texttt{imag}, \texttt{plag}, and \texttt{cohe} helps keep the
+XSPEC session understandable.
+
+\subsection{Keywords}
+
+\begin{description}
+\item[\keyword{XSPEC}] After writing the files, launch XSPEC and load the new
+  PHA file.  The routine also writes a small \texttt{.xcm} command file.  This
+  option is not available under Windows.
+\item[\param{TELESCOPE=tel}] Telescope name written to the FITS headers.
+\item[\param{INSTRUMENT=inst}] Instrument name written to the FITS headers.
+\item[\param{EXTRA_KEYS=keys}, \param{EXTRA_VALUES=values}] Additional header
+  keywords and values passed to the PHA writer.  The two arrays must have the
+  same number of elements.
+\end{description}
+
+For example:
+
+\begin{ghatsconsole}
+Ghats> gh_xspec, freq, power, power_err, 'event_rebinned', $
+       telescope='XTE', instrument='PCA'
+\end{ghatsconsole}
+
+\subsection{Bad Channels}
+
+If \param{value} or \param{value_err} contains undefined values, the
+corresponding XSPEC channel is marked bad through the PHA \param{QUALITY}
+column.  This is useful when arrays produced by cross-spectral routines contain
+bins that should not be used in a fit, for example low-coherence bins that were
+flagged as undefined.
+
+The data are still written to disk.  In XSPEC, the usual channel-quality
+machinery can then be used to ignore bad bins.
 
 \section{\routine{gh_pha} and \routine{gh_rmf}}
 
-Placeholder for lower-level OGIP product writers.
+\routine{gh_pha} and \routine{gh_rmf} are the lower-level writers used by
+\routine{gh_xspec}.  They are normally not called directly by the user.
+
+\subsection{\routine{gh_pha}}
+
+\routine{gh_pha} writes the PHA file:
+
+\begin{ghatsconsole}
+Ghats> gh_pha, power, power_err, quality, phaname, rmfname, $
+       telescope, instrument
+\end{ghatsconsole}
+
+The file contains a primary FITS header and a binary table extension named
+\texttt{SPECTRUM}.  The main columns are:
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.55\textwidth}}
+\toprule
+Column & Meaning \\
+\midrule
+\endhead
+\param{CHANNEL} & XSPEC channel number, starting from 1. \\
+\param{COUNTS} & Timing value converted to power per bin by
+\routine{gh_xspec}. \\
+\param{STAT_ERR} & Statistical error on \param{COUNTS}. \\
+\param{QUALITY} & Channel-quality flag.  A value of 0 marks a good channel;
+non-zero values mark channels that should be treated as bad. \\
+\bottomrule
+\end{longtable}
+
+The PHA header points to the associated response file through \param{RESPFILE}.
+The exposure, area scaling, background scaling, and correction scaling are set
+to unity, and \param{POISSERR} is set to false because GHATS provides the
+errors explicitly.
+
+\subsection{\routine{gh_rmf}}
+
+\routine{gh_rmf} writes the diagonal response:
+
+\begin{ghatsconsole}
+Ghats> gh_rmf, f_low, f_high, rmfname, telescope, instrument
+\end{ghatsconsole}
+
+The response contains two binary-table extensions:
+
+\begin{description}
+\item[\texttt{MATRIX}] The response matrix.  It is diagonal: each frequency
+  bin maps to itself with matrix value 1.
+\item[\texttt{EBOUNDS}] The lower and upper boundaries of each channel.  In
+  GHATS XSPEC products these are the frequency-bin boundaries.
+\end{description}
+
+The RMF is therefore only a bookkeeping device that lets XSPEC assign a
+coordinate to each timing bin.  It does not describe an instrumental energy
+response.
+
+\section{Practical XSPEC Use}
+
+Once the files are written, they can be loaded in XSPEC in the usual way:
+
+\begin{ghatsconsole}
+XSPEC> data event_rebinned.pha
+XSPEC> setplot energy
+XSPEC> plot ldata
+\end{ghatsconsole}
+
+The command \texttt{setplot energy} is useful because XSPEC uses the response
+coordinate as the plotting axis.  In these files, that coordinate is frequency.
+
+When several related timing quantities are written separately, for example
+\(\mathrm{Re}(C)\), \(\mathrm{Im}(C)\), phase lag, and coherence, each one is a
+separate PHA/RMF pair.  Any simultaneous fit or comparison in XSPEC must be
+set up explicitly in the XSPEC session or command file.
+
+\begin{ghatsnote}
+\routine{gh_xspec} preserves the numerical values and errors provided by the
+GHATS analysis step, apart from the required conversion from density per Hz to
+per-bin PHA values.  It does not rebin the data, subtract Poisson noise, or
+change GHATS Fourier, lag, or normalization conventions.
+\end{ghatsnote}

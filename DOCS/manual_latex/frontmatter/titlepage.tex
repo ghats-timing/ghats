@@ -1,44 +1,68 @@
 \begin{titlepage}
 \thispagestyle{empty}
+\newcommand{\titleacrorow}[2]{%
+  \rule[-0.30cm]{0pt}{1.14cm}%
+  {\fontsize{39}{39}\selectfont\bfseries #1} &
+  \raisebox{0.03cm}{{\fontsize{20}{22}\selectfont\bfseries #2}}\\}
+\definecolor{titleRed}{RGB}{216,47,42}
+\definecolor{titleGray}{RGB}{150,153,155}
+\definecolor{titleDarkGray}{RGB}{120,122,124}
+\definecolor{titleMagenta}{RGB}{213,39,126}
+\TitleSansFont
+
+\vspace*{0.05cm}
 \begin{center}
-{\Huge\bfseries GHATS\par}
-\vspace{1.0cm}
-{\LARGE USER'S MANUAL\par}
-\vspace{0.5cm}
-{\large Version 3.3.0 -- 29 August 2025\par}
+{{\TitleThinFont\fontsize{48}{52}\selectfont\color{titleRed}GHATS\par}}
+\vspace{2.05cm}
+{{\TitleThinFont\fontsize{41}{45}\selectfont\color{titleRed}USER'S MANUAL\par}}
+\vspace{1.20cm}
+{\fontsize{18}{20}\selectfont\bfseries\color{titleGray}Version 3.3.0 - 29 August 2025\par}
 \end{center}
 
-\vspace{2.0cm}
+\vspace{2.20cm}
 
-\begin{ghatsbox}
-\Large
-\begin{tabular}{@{}l@{}}
-General\\
-High-Energy\\
-Aperiodic\\
-Timing\\
-Software
+\noindent
+\begin{minipage}[c]{0.38\textwidth}
+\color{titleGray}
+\begin{tabular}{@{}p{1.08cm}@{}l@{}}
+\titleacrorow{G}{eneral}
+\titleacrorow{H}{igh-Energy}
+\titleacrorow{A}{periodic}
+\titleacrorow{T}{iming}
+\titleacrorow{S}{oftware}
 \end{tabular}
-\end{ghatsbox}
+\end{minipage}
+\hfill
+\begin{minipage}[c]{0.35\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figures/title_image-000.png}
+\end{minipage}
+
+\vspace{0.55cm}
+
+\noindent{\fontsize{11.3}{13.6}\selectfont\bfseries\color{titleMagenta}
+Author: Tomaso M. Belloni (INAF - Osservatorio Astronomico di Brera)\par}
+
+\vspace{0.50cm}
+
+\noindent{\fontsize{9.2}{11}\selectfont\bfseries\color{titleDarkGray}
+From 26 August 2023, and after the passing of Tomaso, development has been taken over by:\par}
+
+\vspace{0.20cm}
+
+\noindent{\fontsize{11.3}{13.6}\selectfont\bfseries\color{titleMagenta}
+Mariano M\'endez (Kapteyn Astronomical Institute, University of Groningen)\par}
+\vspace{0.10cm}
+\noindent{\fontsize{11.3}{13.6}\selectfont\bfseries\color{titleMagenta}
+Federico Garc\'ia (Instituto Argentino de Radioastronom\'ia)\par}
+\vspace{0.10cm}
+\noindent{\fontsize{11.3}{13.6}\selectfont\bfseries\color{titleMagenta}
+Sara Motta (INAF - Osservatorio Astronomico di Brera)\par}
 
 \vfill
 
-\noindent Author: Tomaso M. Belloni (INAF -- Osservatorio Astronomico di Brera)
-
-\vspace{0.6cm}
-
-\noindent From 26 August 2023, and after the passing of Tomaso, development has
-been taken over by:
-
-\begin{itemize}
-\item Mariano M\'endez (Kapteyn Astronomical Institute, University of Groningen)
-\item Federico Garc\'ia (Instituto Argentino de Radioastronom\'ia)
-\item Sara Motta (INAF -- Osservatorio Astronomico di Brera)
-\end{itemize}
-
-\vfill
-
-\begin{flushright}
-\ghats
-\end{flushright}
+\noindent
+{\fontsize{13}{13}\selectfont\bfseries\color{titleGray}1}
+\hfill
+{\fontsize{13}{13}\selectfont\bfseries\color{titleGray}GHATS}
 \end{titlepage}
