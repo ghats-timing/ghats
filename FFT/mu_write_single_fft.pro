@@ -34,6 +34,11 @@ common barycentered,baryflag
 common versione,version_id
 common finestre,finestra,winn
 
+; NFT is part of the fixed GHATS binary header and must be written as LONG.
+; A caller passing an IDL INT shifts the rest of the header on disk.
+;
+nft = long(nft)
+
 a0 = 0.0   ; for FFT it does not make sense, but must be added
 ;
 ; Open the file if necessary
