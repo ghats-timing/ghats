@@ -39,6 +39,8 @@ BISPECTRUM/TESTS/
 !DOCS/specs/
 !DOCS/specs/*.md
 DOCS/Manual/
+DOCS/legacy_manual_sources/*.docx
+DOCS/legacy_manual_sources/*.pages
 
 # Other directories
 .idl/
