@@ -4,12 +4,439 @@ This chapter will contain longer worked examples for common analyses.
 
 \section{Basic PDS Analysis}
 
-Placeholder for a complete PDS workflow.
+This walkthrough starts from an existing GHATS \texttt{.pds} file and follows
+the usual quick-look path: inspect the file, read and average the power
+spectra, subtract a noise level if appropriate, rebin the result, and make a
+plot.  The same sequence can be used for products produced by any of the
+mission-specific routines described in Chapter~4.
+
+\subsection*{Inspect the File}
+
+Before averaging or plotting, check that the file is the one intended for the
+analysis:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'source.pds'
+\end{ghatsconsole}
+
+\routine{gh_info} prints the observatory, instrument, target, number of
+stored transforms, number of time bins per transform, frequency resolution,
+Nyquist frequency, channel range, and start time.  These values are the basic
+sanity checks for a PDS analysis.  In particular, the frequency resolution and
+Nyquist frequency tell the user whether the chosen transform length and time
+binning are suitable for the variability range of interest.
+
+For a more visual first look, use:
+
+\begin{ghatsconsole}
+Ghats> ghats_all, 'source.pds'
+\end{ghatsconsole}
+
+\routine{ghats_all} prints a similar header summary, extracts the stored
+light curve, averages the PDS, and makes a quick diagnostic plot.  It is a
+convenience routine for inspection; for measurements, read the arrays
+explicitly as shown below.
+
+\begin{center}
+\vspace{0.5em}
+\centering
+\includegraphics[width=0.86\textwidth]{figures/ghats_all_overview.png}\par
+\vspace{0.4em}
+{\small Example \routine{ghats_all} summary plot from the original GHATS
+manual.  The upper panel shows the count rate for each PDS interval, and the
+lower panel shows the averaged PDS.\par}
+\vspace{0.5em}
+\end{center}
+
+\subsection*{Read and Average the PDS}
+
+The basic call to \routine{ghx} is:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe
+\end{ghatsconsole}
+
+This selects all transforms in the file and returns the average PDS in
+\param{pow}, with the corresponding frequency array in \param{freq} and error
+array in \param{powe}.  If no noise option is supplied, \routine{ghx} returns
+the raw PDS and prints a warning to make that explicit.
+
+To select only part of the observation, use the standard selection keywords:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe, time=[0.0,1000.0]
+Ghats> ghx, 'source.pds', freq, pow, powe, index=[0,63]
+Ghats> ghx, 'source.pds', freq, pow, powe, rate=[100.0,500.0]
+\end{ghatsconsole}
+
+The selections may be combined.  The \param{INDEX} values refer to the
+internal transform counter, starting from 0.
+
+\subsection*{Subtract the Noise Level}
+
+For RXTE/PCA products, the historical option is:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe, /poisson
+\end{ghatsconsole}
+
+For a mission-independent empirical estimate, give a frequency interval from
+which \routine{ghx} should estimate a constant level:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe, poisson=[400.0,800.0]
+\end{ghatsconsole}
+
+The interval is clipped to the available non-Nyquist frequencies.  If a
+constant level has already been measured elsewhere, it can be supplied
+directly:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe, manual_poi=2.0
+\end{ghatsconsole}
+
+Use only one of \keyword{POISSON}, \param{POISSON=[f1,f2]}, or
+\param{MANUAL_POI=p} in a single call.
+
+\subsection*{Convert to Fractional-RMS Units}
+
+If the PDS should be returned in \(rms^2\) units, supply the background count
+rate through \param{RMS}:
+
+\begin{ghatsconsole}
+Ghats> ghx, 'source.pds', freq, pow, powe, poisson=[400.0,800.0], rms=0.0
+\end{ghatsconsole}
+
+The value passed with \param{RMS} is the background rate in the same count-rate
+units as the GHATS product.  For a negligible or unknown background, users
+often start with \texttt{rms=0.0}; if the background is important, it should
+be estimated from the appropriate mission data products and supplied here.
+
+\subsection*{Rebin the PDS}
+
+The raw frequency grid is often too fine for display.  A common next step is
+logarithmic rebinning with a negative rebin factor:
+
+\begin{ghatsconsole}
+Ghats> gh_reb, freq, pow, powe, -100, rfreq, rpow, rpowe
+\end{ghatsconsole}
+
+The output arrays \param{rfreq}, \param{rpow}, and \param{rpowe} contain the
+rebinned spectrum.  Larger absolute values of a negative rebin factor give
+finer logarithmic sampling; smaller absolute values give stronger smoothing.
+For linearly grouped bins, use a positive integer rebin factor instead.
+
+\subsection*{Plot the Result}
+
+To plot \(P(f)\):
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power, rfreq, rpow, rpowe
+\end{ghatsconsole}
+
+To plot \(fP(f)\):
+
+\begin{ghatsconsole}
+Ghats> gh_plot_nupower, rfreq, rpow, rpowe
+\end{ghatsconsole}
+
+Optional axis limits can be supplied after the arrays:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_power, rfreq, rpow, rpowe, 0.1, 64.0
+Ghats> gh_plot_power, rfreq, rpow, rpowe, 0.1, 64.0, 1.0e-4, 10.0
+\end{ghatsconsole}
+
+The first pair is the frequency range.  The second pair, when present, is the
+power range.
+
+\subsection*{A Complete Minimal Session}
+
+A compact first-pass analysis might therefore look like this:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'source.pds'
+Ghats> ghx, 'source.pds', freq, pow, powe, poisson=[400.0,800.0], rms=0.0
+Ghats> gh_reb, freq, pow, powe, -100, rfreq, rpow, rpowe
+Ghats> gh_plot_nupower, rfreq, rpow, rpowe
+\end{ghatsconsole}
+
+The arrays remain available in the IDL/GDL session after the plot.  They can
+be fitted, written out, overplotted with another observation, or passed to
+other GHATS routines.
 
 \section{Cross-Spectral Analysis}
 
-Placeholder for a complete lag/coherence workflow.
+This walkthrough starts from two GHATS \texttt{.fft} files and produces phase
+lags, coherence, and the real and imaginary parts of the cross spectrum.  The
+two FFT files should normally be produced from the same event data with the
+same time binning, GTIs, transform length, and window function, changing only
+the channel or energy selection.
+
+\subsection*{Create Compatible FFT Files}
+
+For example, for a soft and hard band:
+
+\begin{ghatsconsole}
+Ghats> gh_nicer, 'event.evt', 'FFT', [30,200],  10000, 32768, 'soft.fft'
+Ghats> gh_nicer, 'event.evt', 'FFT', [201,1200],10000, 32768, 'hard.fft'
+\end{ghatsconsole}
+
+For another mission, replace \routine{gh_nicer} with the appropriate
+production routine.  The important point is that the two calls use the same
+input data and the same timing parameters.  The FFT products can be checked
+with:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'soft.fft'
+Ghats> gh_info, 'hard.fft'
+\end{ghatsconsole}
+
+The number of transforms, transform duration, frequency resolution, Nyquist
+frequency, and start time should match.  If they do not, the files should not
+be used together for cross-spectral work.
+
+\subsection*{Run the Recommended Cross-Spectral Command}
+
+The recommended high-level command is \routine{gh_cs}:
+
+\begin{ghatsconsole}
+Ghats> file_ref = 'soft.fft'
+Ghats> file_sub = 'hard.fft'
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400.0,800.0], /lowcoh
+\end{ghatsconsole}
+
+The first file is the reference band and the second file is the subject band.
+Positive lags mean that the second band lags the first.  The rebin factor
+\texttt{-100} requests the usual logarithmic frequency rebinning.
+
+The output arrays are:
+
+\begin{description}
+\item[\param{freq}] Rebinned frequency array, in Hz.
+\item[\param{lag}, \param{lag_err}] Phase lag and error, in radians.
+\item[\param{coh}, \param{coh_err}] Coherence and error.
+\item[\param{real}, \param{imag}] Real and imaginary parts of the averaged
+  cross spectrum.
+\item[\param{real_err}, \param{imag_err}] Errors on the real and imaginary
+  parts.
+\item[\param{modcs}, \param{modcs_err}] Modulus of the cross spectrum and its
+  error.
+\item[\param{mw}] Number of averaged cross vectors in each rebinned bin.
+\item[\param{qf}] Quality flag for the \keyword{LOWCOH} coherence-error
+  calculation.
+\end{description}
+
+\param{POISSON=[400.0,800.0]} tells the routine to estimate the PDS noise
+levels from that frequency interval.  In \routine{gh_cs}, the same interval
+is also used to estimate and subtract the constant real cross-spectrum
+component caused by dead-time cross talk or by overlap between subject and
+reference bands.  The interval should lie inside the available frequency
+range and should not rely on the Nyquist bin.
+
+\subsection*{Raw and Intrinsic Coherence}
+
+For intrinsic coherence, give either \param{POISSON=[f1,f2]} or
+\param{MANUAL_POI=[p1,p2]}:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       manual_poi=[2.0,2.0]
+\end{ghatsconsole}
+
+For raw measured coherence, use \keyword{RAWCOH}.  In that case the observed
+PDS are used in the denominator and no Poisson correction is applied:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, /rawcoh
+\end{ghatsconsole}
+
+\keyword{RAWCOH} is mutually exclusive with \param{POISSON},
+\param{MANUAL_POI}, and \keyword{LOWCOH}.
+
+\subsection*{Low-Coherence Errors and Quality Flags}
+
+With \keyword{LOWCOH}, \routine{gh_cs} uses the implemented
+Vaughan--Nowak low-measured-coherence error treatment where the conditions
+allow it.  The quality flag \param{qf} records the path used for each
+frequency bin.  Some bins may be outside the implemented useful range; in
+that case the routine marks them as undefined.
+
+In IDL this may print:
+
+\begin{ghatsconsole}
+% Program caused arithmetic error: Floating illegal operand
+\end{ghatsconsole}
+
+When it appears immediately after a \keyword{LOWCOH} calculation, this message
+is normally the result of marking those undefined bins.  Other floating-point
+messages should be checked.
+
+\subsection*{RMS Units and Rotation}
+
+If \param{RMS1} and \param{RMS2} are supplied, the real and imaginary parts,
+their errors, and the modulus are converted to rms units:
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400.0,800.0], rms1=0.001, rms2=0.001, /lowcoh
+\end{ghatsconsole}
+
+The two values are the background rates for the first and second FFT files.
+They must be supplied together.
+
+The \keyword{ROTATE} option rotates the returned real and imaginary parts by
+\(\pi/4\).  This can be useful when the real part is large and the imaginary
+part is small or negative, for example before plotting both components in a
+logarithmic package.  The lag and coherence arrays are not rotated.
+
+\begin{ghatsconsole}
+Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400.0,800.0], /lowcoh, /rotate
+\end{ghatsconsole}
+
+\subsection*{Plot or Export the Results}
+
+The lag and coherence arrays can be plotted directly:
+
+\begin{ghatsconsole}
+Ghats> gh_plot_lag, freq, lag, lag_err, 0.1, 64.0, -1.0, 1.0, /lin
+Ghats> gh_plot_coh, freq, coh, coh_err, 0.1, 64.0, 0.0, 1.1
+\end{ghatsconsole}
+
+For XSPEC fitting or plotting, write each array as a PHA/RMF pair:
+
+\begin{ghatsconsole}
+Ghats> gh_xspec, freq, real, real_err, 'real_soft_hard'
+Ghats> gh_xspec, freq, imag, imag_err, 'imag_soft_hard'
+Ghats> gh_xspec, freq, lag,  lag_err,  'plag_soft_hard'
+Ghats> gh_xspec, freq, coh,  coh_err,  'cohe_soft_hard'
+\end{ghatsconsole}
+
+\subsection*{A Complete Minimal Session}
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'soft.fft'
+Ghats> gh_info, 'hard.fft'
+Ghats> gh_cs, 'soft.fft', 'hard.fft', freq, lag, lag_err, coh, coh_err, $
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf, $
+       poisson=[400.0,800.0], /lowcoh
+Ghats> gh_plot_lag, freq, lag, lag_err, 0.1, 64.0, -1.0, 1.0, /lin
+Ghats> gh_plot_coh, freq, coh, coh_err, 0.1, 64.0, 0.0, 1.1
+\end{ghatsconsole}
 
 \section{Dynamic PDS Analysis}
 
-Placeholder for a complete time-frequency workflow.
+This walkthrough starts from an existing GHATS \texttt{.pds} file and
+constructs a time-frequency image.  The individual rows of the image are the
+power spectra already stored in the PDS file; no new Fourier transforms are
+computed.
+
+\subsection*{Start from a PDS File}
+
+First inspect the file:
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'source.pds'
+\end{ghatsconsole}
+
+The transform duration sets the time sampling of the unrebinned dynamic PDS.
+The frequency resolution and Nyquist frequency set the native frequency grid.
+If the dynamic PDS should show faster or slower changes, the PDS file itself
+must be produced with an appropriate transform length.
+
+\subsection*{Read a Dynamic PDS into IDL/GDL Arrays}
+
+The simplest call is:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'source.pds', time, rate, freq, dynimage
+\end{ghatsconsole}
+
+The returned arrays are:
+
+\begin{description}
+\item[\param{time}] Time axis, in seconds from the file start.
+\item[\param{rate}] Count-rate curve rebinned consistently with the image.
+\item[\param{freq}] Frequency axis, in Hz.
+\item[\param{dynimage}] Two-dimensional power image.
+\end{description}
+
+For inspection, it is usually useful to rebin in frequency and sometimes in
+time:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn, 'source.pds', time, rate, freq, dynimage, frebin=-100, trebin=4
+\end{ghatsconsole}
+
+\param{FREBIN=-100} uses logarithmic frequency rebinning.  A positive
+\param{FREBIN} value would combine that number of adjacent frequency bins
+linearly.  \param{TREBIN=4} combines groups of four adjacent PDS intervals in
+time.  Time rebinning is linear only.
+
+\begin{ghatsnote}
+\routine{gh_dyn} does not subtract a Poisson level.  The dynamic image is
+primarily an inspection product.  For an averaged PDS with errors, use
+\routine{ghx} and \routine{gh_reb}.
+\end{ghatsnote}
+
+\subsection*{Write a FITS Dynamic PDS}
+
+To save the dynamic PDS as a FITS file, use \routine{gh_dyn_fits}:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'source.pds', 'source_dynpds.fits', $
+       frebin=-100, trebin=4
+\end{ghatsconsole}
+
+The FITS file contains the image, frequency array, time array, and count-rate
+array.  It is a portable product for later inspection or plotting.
+
+\subsection*{Open the Interactive Viewer}
+
+With \keyword{SHOW}, \routine{gh_dyn_fits} writes the FITS file and then
+launches the Python viewer:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'source.pds', 'source_dynpds.fits', $
+       frebin=-100, trebin=4, /show
+\end{ghatsconsole}
+
+Viewer options can be passed through \param{ARGUMENTS}:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, 'source.pds', 'source_dynpds.fits', $
+       frebin=-100, trebin=4, /show, $
+       arguments='-fmin 0.1 -fmax 64 --showGaps'
+\end{ghatsconsole}
+
+The same viewer can also be run from the shell if the repository
+\texttt{PYTHON} directory is in the shell path:
+
+\begin{ghatsconsole}
+$ GH_dyn_fits_tk.py source_dynpds.fits -fmin 0.1 -fmax 64 --showGaps
+\end{ghatsconsole}
+
+Useful viewer options include \param{-pmin} and \param{-pmax} for the colour
+scale, \param{-fmin} and \param{-fmax} for the frequency range,
+\param{-tmin} and \param{-tmax} for the time range, \param{--linear} for a
+linear colour scale, and \param{--nupnu} for plotting \(fP(f)\).
+
+\subsection*{A Complete Minimal Session}
+
+\begin{ghatsconsole}
+Ghats> gh_info, 'source.pds'
+Ghats> gh_dyn, 'source.pds', time, rate, freq, dynimage, frebin=-100, trebin=4
+Ghats> gh_dyn_fits, 'source.pds', 'source_dynpds.fits', $
+       frebin=-100, trebin=4, /show, $
+       arguments='-fmin 0.1 -fmax 64 --showGaps'
+\end{ghatsconsole}
+
+This leaves the original \texttt{.pds} file unchanged, creates a FITS
+time-frequency product, and opens a viewer for interactive inspection.

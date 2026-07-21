@@ -1,0 +1,84 @@
+\chapter{Window Functions}
+\label{app:window-functions}
+
+Here are listed the functional forms of the available window functions.  The
+functions refer to the time interval \([-T/2,T/2]\) and are zero outside it.
+The parameters \(\alpha\), \(\beta\), \(\sigma\), and \(\gamma\) must be
+supplied by the user for the windows that require them.
+
+In the implementation, \routine{ghats_window} uses the dimensionless variable
+\[
+  u = t/T ,
+  \qquad -1/2 \leq u < 1/2 .
+\]
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}}
+\toprule
+Window & Functional form & Parameter \\
+\midrule
+\endhead
+Boxcar &
+\[
+  f(u) = 1
+\]
+& none \\
+
+Bartlett &
+\[
+  f(u) = 1 - \left|\frac{u}{1/2}\right|
+\]
+& none \\
+
+Hann &
+\[
+  f(u) = \frac{1}{2}\left[1+\cos(2\pi u)\right]
+\]
+& none \\
+
+Welch &
+\[
+  f(u) = 1 - \left(\frac{u}{1/2}\right)^2
+\]
+& none \\
+
+Cosine &
+\[
+  f(u) = \cos(\pi u)
+\]
+& none \\
+
+Hanning &
+\[
+  f(u) = \cos^2(\pi u)
+\]
+& none \\
+
+Hamming &
+\[
+  f(u) = \alpha + (1-\alpha)\cos^2(\pi u)
+\]
+& \(\alpha\) \\
+
+Triplet &
+\[
+  f(u) = \exp\left(-\frac{\beta}{|u|}\right)\cos^2(\pi u)
+\]
+& \(\beta\) \\
+
+Gauss &
+\[
+  f(u) = \exp\left[-\frac{1}{2}\frac{u^2}{\sigma^2}\right]
+\]
+& \(\sigma\) \\
+
+Kaiser &
+\[
+  f(u) = \frac{I_0\!\left(\gamma\sqrt{1-(2u)^2}\right)}{I_0(\gamma)}
+\]
+& \(\gamma\) \\
+\bottomrule
+\end{longtable}
+
+The numerical implementation is in \routine{ghats_window}.  The default
+window is \texttt{Boxcar}.  The windows \texttt{Hamming}, \texttt{Triplet},
+\texttt{Gauss}, and \texttt{Kaiser} require \param{WPAR}.
