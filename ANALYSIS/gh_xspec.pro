@@ -1,5 +1,5 @@
 pro gh_xspec,nu,power,power_err,outputname,xspec=xx,telescope=telescope,instrument=instrument, $
-             extra_keys=extra_keys,extra_values=extra_values
+             extra_keys=extra_keys,extra_values=extra_values,help=help
 ;+
 ; NAME:
 ;      GH_XSPEC
@@ -47,6 +47,25 @@ pro gh_xspec,nu,power,power_err,outputname,xspec=xx,telescope=telescope,instrume
 ;       M. Mendez   29 Sep 2023  write quality of channel; if value or error is NaN set quality=5 (bad from user)
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_XSPEC'
+   print,''
+   print,'Write arrays as XSPEC PHA/RMF products.'
+   print,''
+   print,'Usage:'
+   print,'  GH_XSPEC, frequency, power, power_err, outputname'
+   print,''
+   print,'Arguments:'
+   print,'  frequency   Frequency array.'
+   print,'  power       Values to write as PHA counts per bin.'
+   print,'  power_err   Errors on values.'
+   print,'  outputname  Basename for output .pha and .rmf files.'
+   print,''
+   print,'Keywords: /XSPEC launches XSPEC after writing; TELESCOPE= and INSTRUMENT= set headers;'
+   print,'          EXTRA_KEYS= and EXTRA_VALUES= add FITS header keywords; /HELP prints this message.'
+   return
+endif
 ;
 ;
    nfreq=n_elements(nu)*1L

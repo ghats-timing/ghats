@@ -1,4 +1,4 @@
-pro gh_plot_coh,frequency,coh,coh_err,x1,x2,y1,y2,ps=psopt
+pro gh_plot_coh,frequency,coh,coh_err,x1,x2,y1,y2,ps=psopt,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_COH
@@ -43,6 +43,21 @@ pro gh_plot_coh,frequency,coh,coh_err,x1,x2,y1,y2,ps=psopt
 ;		T. Belloni  01 Mar 2012  changed default PS name
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_COH'
+   print,''
+   print,'Plot coherence with errors.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PLOT_COH, frequency, coherence, coherence_err'
+   print,'  GH_PLOT_COH, frequency, coherence, coherence_err, x1, x2'
+   print,'  GH_PLOT_COH, frequency, coherence, coherence_err, x1, x2, y1, y2'
+   print,''
+   print,'Optional x1,x2 set the frequency range; y1,y2 set the coherence range.'
+   print,'Keywords: /PS writes gh_coh.ps; /HELP prints this message.'
+   return
+endif
 common sis,sistema
 ;
 n    = n_elements(frequency)

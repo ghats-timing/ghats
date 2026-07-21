@@ -1,4 +1,4 @@
-pro gh_plot_lag,frequency,lag,lag_err,x1,x2,y1,y2,ps=psopt,time=tim,lin=lin,hyp=hyp
+pro gh_plot_lag,frequency,lag,lag_err,x1,x2,y1,y2,ps=psopt,time=tim,lin=lin,hyp=hyp,help=help
 ;+
 ; NAME: 
 ;      GH_PLOT_LAG
@@ -51,6 +51,22 @@ pro gh_plot_lag,frequency,lag,lag_err,x1,x2,y1,y2,ps=psopt,time=tim,lin=lin,hyp=
 ;		T. Belloni  16 Mar 2012  added hyp keyword
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PLOT_LAG'
+   print,''
+   print,'Plot phase or time lags with errors.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PLOT_LAG, frequency, lag, lag_err'
+   print,'  GH_PLOT_LAG, frequency, lag, lag_err, x1, x2'
+   print,'  GH_PLOT_LAG, frequency, lag, lag_err, x1, x2, y1, y2'
+   print,''
+   print,'Optional x1,x2 set the frequency range; y1,y2 set the lag range.'
+   print,'Keywords: /TIME plots time lags; /LIN uses a linear Y axis;'
+   print,'          /HYP plots sinh(lag); /PS writes gh_lag.ps; /HELP prints this message.'
+   return
+endif
 common sis,sistema
 ;
 n    = n_elements(frequency)

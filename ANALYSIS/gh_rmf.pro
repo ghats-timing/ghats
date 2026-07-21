@@ -1,4 +1,4 @@
-PRO GH_RMF,F1,F2,RMFNAME,TELESCOPE,INSTRUMENT
+PRO GH_RMF,F1,F2,RMFNAME,TELESCOPE,INSTRUMENT,help=help
 ;+
 ; NAME: 
 ;      GH_RMF
@@ -36,6 +36,24 @@ PRO GH_RMF,F1,F2,RMFNAME,TELESCOPE,INSTRUMENT
 ;		T. Belloni  01 Dec 2010  from mu6
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_RMF'
+   print,''
+   print,'Write a diagonal XSPEC/OGIP RMF/RSP file. Normally called by GH_XSPEC.'
+   print,''
+   print,'Usage:'
+   print,'  GH_RMF, f1, f2, rmfname, telescope, instrument'
+   print,''
+   print,'Arguments:'
+   print,'  f1, f2      Low and high boundaries for frequency bins.'
+   print,'  rmfname     Output RMF/RSP filename.'
+   print,'  telescope   TELESCOP header value.'
+   print,'  instrument  INSTRUME header value.'
+   print,''
+   print,'Keywords: /HELP prints this message.'
+   return
+endif
 
 ncol   = 6l
 nrow   = long(n_elements(f1))

@@ -1,7 +1,7 @@
 pro gh_cross_range,filename1,filename2,nu0,width,             $
              frequency_reb,lag,lag_err,irfplot,                       $
 	         tlag=tl, $
-	         index=index,time=time,sel=sel,plot=pl,poivalue=poivalue
+	         index=index,time=time,sel=sel,plot=pl,poivalue=poivalue,help=help
 ;+
 ; NAME: 
 ;      GH_CROSS_RANGE
@@ -70,6 +70,25 @@ pro gh_cross_range,filename1,filename2,nu0,width,             $
 ;		T. Belloni  27 Aug 2020  output cross-spectral amplitude with error
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_CROSS_RANGE'
+   print,''
+   print,'Compute average phase/time lag around a selected frequency range.'
+   print,''
+   print,'Usage:'
+   print,'  GH_CROSS_RANGE, file1, file2, nu0, width, frequency, lag, lag_err, irfplot'
+   print,''
+   print,'Optional keywords:'
+   print,'  INDEX=[i1,i2]    Select FFT indices.'
+   print,'  TIME=[t1,t2]     Select FFTs by time.'
+   print,'  SEL=indices      Select explicit FFT indices.'
+   print,'  /TLAG            Return time lags instead of phase lags.'
+   print,'  /PLOT            Plot the lag spectrum and selected frequency range.'
+   print,'  POIVALUE=value   Subtract fixed real cross-spectrum noise value.'
+   print,'  /HELP            Print this message.'
+   return
+endif
 ;
 ; Open first FFT file
 ;

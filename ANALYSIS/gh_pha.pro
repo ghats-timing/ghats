@@ -1,5 +1,5 @@
 PRO GH_PHA,POWER,POWER_ERR,QQ,PHANAME,RMFNAME,TELESCOPE,INSTRUMENT, $
-           extra_keys=extra_keys,extra_values=extra_values
+           extra_keys=extra_keys,extra_values=extra_values,help=help
 ;+
 ; NAME: 
 ;      GH_PHA
@@ -42,6 +42,24 @@ PRO GH_PHA,POWER,POWER_ERR,QQ,PHANAME,RMFNAME,TELESCOPE,INSTRUMENT, $
 
 ;-
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_PHA'
+   print,''
+   print,'Write an XSPEC/OGIP PHA file. Normally called by GH_XSPEC.'
+   print,''
+   print,'Usage:'
+   print,'  GH_PHA, power, power_err, quality, phaname, rmfname, telescope, instrument'
+   print,''
+   print,'Arguments:'
+   print,'  power, power_err  Values and errors to write.'
+   print,'  quality           XSPEC quality flags.'
+   print,'  phaname           Output PHA filename.'
+   print,'  rmfname           Response filename recorded in the PHA header.'
+   print,''
+   print,'Keywords: EXTRA_KEYS= and EXTRA_VALUES= add FITS header keywords; /HELP prints this message.'
+   return
+endif
 
 ;ncol   = 6l
 ; MM ncol   = 3l

@@ -1,7 +1,7 @@
 pro gh_cross,filename1,filename2,             $
              frequency_reb,lag,lag_err,coherence,coherence_err, $
 	         irf,tlag=tl, $
-	         index=index,time=time,sel=sel,rate=rate,poisson=poisson,poivalue=poivalue,cross=cross
+	         index=index,time=time,sel=sel,rate=rate,poisson=poisson,poivalue=poivalue,cross=cross,help=help
 ;+
 ; NAME: 
 ;      GH_CROSS
@@ -81,6 +81,27 @@ pro gh_cross,filename1,filename2,             $
 ;			
 ;
 ;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_CROSS'
+   print,''
+   print,'Compute phase/time lags and coherence from two compatible FFT files.'
+   print,''
+   print,'Usage:'
+   print,'  GH_CROSS, file1, file2, frequency, lag, lag_err, coherence, coherence_err, irf'
+   print,''
+   print,'Optional keywords:'
+   print,'  INDEX=[i1,i2]     Select FFT indices.'
+   print,'  TIME=[t1,t2]      Select FFTs by time.'
+   print,'  RATE=[r1,r2]      Select FFTs by count rate.'
+   print,'  SEL=indices       Select explicit FFT indices.'
+   print,'  /TLAG             Return time lags instead of phase lags.'
+   print,'  POISSON=[f1,f2]   Estimate/subtract Poisson noise from a frequency range.'
+   print,'  POIVALUE=value    Subtract fixed real cross-spectrum noise value.'
+   print,'  CROSS=cross       Return cross-spectrum values and errors.'
+   print,'  /HELP             Print this message.'
+   return
+endif
 ;
 ; Open first FFT file
 ;
