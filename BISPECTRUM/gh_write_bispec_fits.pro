@@ -31,6 +31,16 @@ pro gh_write_bispec_fits,filename,frequency1,frequency2, $
 ;      PRODUCT and SRCFILE1/2/3 are optional FITS provenance keywords.
 ;-
 
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_WRITE_BISPEC_FITS'
+   print,''
+   print,'Clear-name wrapper for GH_BISPEC_FITS.'
+   print,'It accepts the same arguments and keywords; detailed help follows.'
+   gh_bispec_fits, /help
+   return
+endif
+
 gh_bispec_fits,filename,frequency1,frequency2, $
                breal,bimag,bmod,bphase,bicoh,nprod_used, $
                raw_bsum_real=raw_bsum_real, $
