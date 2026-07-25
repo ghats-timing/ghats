@@ -133,6 +133,15 @@ Ghats> gh_dyn_fits, 'file.pds', 'file_dynpds.fits', /show, $
        arguments='--linear -fmin 0.1 -fmax 50 -pmin 1.5 -pmax 4.0'
 \end{ghatsconsole}
 
+For the list of colour maps accepted by \param{-cmap}, use:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, /cmhelp
+\end{ghatsconsole}
+
+Any listed colour map can be reversed by appending \texttt{\_r}, for example
+\param{viridis\_r}.
+
 \section{Dynamic-PDS FITS Layout}
 
 The current FITS file written by \routine{gh_dyn_fits} is simple and uses HDU
@@ -175,15 +184,23 @@ Common viewer options include:
 
 \begin{description}
 \item[\param{-title}] Set the window title.
-\item[\param{-cmap}] Choose a Matplotlib colour map.
+\item[\param{-t0}] Set the reference MJD for the time axis.
+\item[\param{-cmap}] Choose a Matplotlib colour map.  From inside GHATS, use
+  \routine{gh_dyn_fits} with \keyword{CMHELP} to list the available names.
 \item[\param{-interp}] Choose the image interpolation method.
 \item[\param{-pmin}, \param{-pmax}] Set the colour-scale limits.
 \item[\param{-fmin}, \param{-fmax}] Set the displayed frequency range.
+\item[\param{-ft}] Set frequency tick positions.
+\item[\param{-fh}] Highlight selected frequencies.
+\item[\param{-hc}] Set the highlight colour.
 \item[\param{-tmin}, \param{-tmax}] Set the displayed time range.
-\item[\param{-fh}, \param{-th}] Highlight selected frequencies or times.
+\item[\param{-tt}] Set time tick positions.
+\item[\param{-th}] Highlight selected times.
 \item[\param{--linear}] Use a linear colour scale instead of the default
   logarithmic display.
 \item[\param{--nupnu}] Display \(fP(f)\) rather than \(P(f)\).
+\item[\param{-cb}, \param{--colorbar}] Show the colour bar at startup.
+\item[\param{--dynPDSonly}] Hide the light-curve panel.
 \item[\param{--savepdf}, \param{--savepng}] Save the figure.
 \item[\param{--noshow}] Save or prepare the figure without displaying the
   interactive window.

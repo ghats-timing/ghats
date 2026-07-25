@@ -425,8 +425,19 @@ $ GH_dyn_fits_tk.py source_dynpds.fits -fmin 0.1 -fmax 64 --showGaps
 
 Useful viewer options include \param{-pmin} and \param{-pmax} for the colour
 scale, \param{-fmin} and \param{-fmax} for the frequency range,
-\param{-tmin} and \param{-tmax} for the time range, \param{--linear} for a
-linear colour scale, and \param{--nupnu} for plotting \(fP(f)\).
+\param{-tmin} and \param{-tmax} for the time range, \param{-ft} and
+\param{-tt} for custom frequency and time tick positions, \param{-fh} and
+\param{-th} for highlighted frequencies and times, \param{--linear} for a
+linear colour scale, \param{--nupnu} for plotting \(fP(f)\),
+\param{--dynPDSonly} for hiding the light-curve panel, and
+\param{-cb}/\param{--colorbar} for showing the colour bar at startup.  To list
+the colour maps accepted by \param{-cmap}, run:
+
+\begin{ghatsconsole}
+Ghats> gh_dyn_fits, /cmhelp
+\end{ghatsconsole}
+
+Any listed colour map can be reversed by appending \texttt{\_r}.
 
 \subsection*{A Complete Minimal Session}
 

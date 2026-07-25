@@ -1,9 +1,63 @@
 \chapter*{Revision History}
 \addcontentsline{toc}{chapter}{Revision History}
 
-This section is the starting point for the LaTeX conversion of the revision
-history in the Pages/Word manual. The entries below are copied from the first
-part of the current manual and should be expanded in later conversion passes.
+This section summarizes the main user-visible changes.  The version 3.4.0
+entry is extracted from \texttt{CHANGELOG.md} and
+\texttt{RELEASES/v3.4.0.md}.  Older entries below are retained from the
+legacy manual.
+
+\section*{Version 3.4.0 (TBC) -- 29 August 2026 (expected)}
+
+Version 3.4.0 is a major feature release and the largest functional expansion
+of \ghats{} since version 3.3.0.
+
+\begin{itemize}
+\item Added a new \texttt{BISPECTRUM} module for higher-order Fourier timing
+      analysis, including one- and two-dimensional bispectrum calculations,
+      bicoherence and normalized bispectral products, hypotenuse-domain
+      analysis, cross-bispectra, two-dimensional rebinning and plotting, and
+      FITS input/output for bispectrum products.
+\item Added support for Einstein Probe and IXPE, including mission-specific
+      event reading, channel selection, time-resolution detection, and FITS
+      metadata handling.
+\item Updated support for RXTE, AstroSat CZTI and LAXPC, Insight-HXMT HE/ME/LE,
+      NICER, NuSTAR, Swift, and XMM-Newton, with more consistent FFT generation
+      and metadata handling across missions.
+\item Added and expanded analysis utilities, including PDS metafiles in
+      \routine{ghx}, FFT generation from ASCII light curves, FFT/PDS splitting
+      utilities, PDS concatenation utilities, Poisson-level estimation over
+      selected frequency intervals, and improved \routine{gh_info} support for
+      both PDS and FFT products.
+\item Updated \routine{ghats_all} to produce quick-look power spectra directly
+      from GHATS FFT files and to warn about malformed legacy products.
+\item Added a central help system with alphabetical and task-oriented routine
+      indices, command-line help support, and expanded \keyword{HELP} text for
+      many user-facing routines.
+\item Added this LaTeX-based User Manual and a standalone GHATS File Format
+      Specification.
+\item Standardized FFT-length handling so that the GHATS \param{NFT} header
+      field is written as an IDL \texttt{LONG}, preserving the intended binary
+      header layout.
+\item Improved validation and reporting of GHATS FFT/PDS headers, including
+      diagnostics for products produced by older command-line paths that wrote
+      \param{NFT} with the wrong integer size.
+\item Improved averaging, rebinning, plotting, dynamic-PDS, light-curve,
+      housekeeping, XSPEC-export, and Poisson-noise handling routines.
+\item Fixed malformed FFT/PDS headers caused by writing the FFT length as a
+      16-bit IDL integer instead of the required 32-bit IDL \texttt{LONG}.
+\item Fixed FFT quick-look processing so powers are calculated from individual
+      FFT records rather than from averaged complex amplitudes, and added
+      safeguards for quick-look plots with no positive powers.
+\item Fixed an obsolete AstroSat/CZTI interactive-default branch that prevented
+      the distributed default configuration from compiling.
+\end{itemize}
+
+\begin{ghatsnote}
+The intended GHATS binary-header layout has not changed.  Correct products
+from earlier versions are expected to remain compatible.  Products affected by
+the older malformed \param{NFT} field should be regenerated before scientific
+analysis.
+\end{ghatsnote}
 
 \section*{Version 1.0.1}
 
@@ -31,7 +85,6 @@ part of the current manual and should be expanded in later conversion passes.
 \end{itemize}
 
 \begin{ghatsnote}
-The complete revision history remains in the legacy manual. This LaTeX
-section is intentionally partial until the conversion is done chapter by
-chapter.
+The historical revision entries between version 1.0.2 and version 3.3.0 remain
+in the legacy manual and should be migrated in a later editorial pass.
 \end{ghatsnote}
