@@ -1,6 +1,52 @@
-PRO gh_split_pds, file_in, gap_threshold=gap_threshold
-  ; file_in: Input .pds filename
-  ; gap_threshold: Time in seconds (Default: 1200s)
+PRO gh_split_pds, file_in, gap_threshold=gap_threshold, help=help
+;+
+; NAME:
+;      GH_SPLIT_PDS
+;
+; PURPOSE:
+;      Split a GHATS .pds file into separate files at large time gaps.
+;
+; CALLING SEQUENCE:
+;      GH_SPLIT_PDS, file_in
+;      GH_SPLIT_PDS, file_in, GAP_THRESHOLD=gap_threshold
+;      GH_SPLIT_PDS, /HELP
+;
+; INPUTS:
+;      FILE_IN        Input .pds filename.
+;
+; KEYWORDS:
+;      GAP_THRESHOLD  Gap threshold in seconds.  A new output file is started
+;                     when the time gap between consecutive PDS segments is
+;                     larger than this value.  Default: 1200 seconds.
+;      HELP           Print help and return.
+;
+; OUTPUTS:
+;      Writes files named <input_base>_orbNN.pds.
+;
+; ROUTINES USED:
+;      GHATS_OPENPDS, GHATS_GETHEADER
+;
+; MODIFICATION HISTORY:
+;      2026 Jul 25  M. Mendez/Codex  Added /HELP text.
+;-
+
+  IF KEYWORD_SET(help) THEN BEGIN
+     PRINT, ''
+     PRINT, 'GH_SPLIT_PDS'
+     PRINT, ''
+     PRINT, 'Split a GHATS .pds file into separate files at large time gaps.'
+     PRINT, ''
+     PRINT, 'Usage:'
+     PRINT, '  gh_split_pds, file_in'
+     PRINT, '  gh_split_pds, file_in, gap_threshold=1200.0'
+     PRINT, ''
+     PRINT, 'Keywords:'
+     PRINT, '  GAP_THRESHOLD  Gap threshold in seconds. Default: 1200.'
+     PRINT, '  HELP           Print this help and return.'
+     PRINT, ''
+     PRINT, 'Output files are named <input_base>_orbNN.pds.'
+     RETURN
+  ENDIF
 
   IF (N_ELEMENTS(gap_threshold) EQ 0) THEN gap_threshold = 1200.0 
   gap_threshold = gap_threshold/86400.0

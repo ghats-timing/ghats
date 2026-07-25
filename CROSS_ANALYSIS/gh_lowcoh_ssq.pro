@@ -4,10 +4,19 @@
 ; PURPOSE: 
 ;      Calculate the necesarry input to obtain Coherence error estimates
 ;      in the High Powers, Low Measured Coherence case of VN97.
+; CALLING SEQUENCE:
+;      ssq = GH_LOWCOH_SSQ(asq, nsq)
+;      ci  = GH_LOWCOH_SSQ_CI(CL, asq, nsq)
+; KEYWORDS:
+;      HELP    Print help and return a NaN sentinel.
 ; NOTES:
-;      This functions are used by GH_CROSS_RE_IM_NEW.
+;      These functions are helper routines used by GH_CROSS_RE_IM_NEW, not
+;      standalone analysis commands.
+;      Because these are IDL FUNCTIONs, /HELP must be called in function form:
+;      dummy = GH_LOWCOH_SSQ(/HELP) or dummy = GH_LOWCOH_SSQ_CI(/HELP).
 ; MODIFICATION HISTORY: 
 ;      F. Garcia  22 Mar 2024  from scratch
+;      2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 
 
 FUNCTION PROBDIST_CROSS, ssq, asq=asq, nsq=nsq
@@ -33,7 +42,15 @@ FUNCTION INVERSE_CDF, ssq, asq=asq, nsq=nsq, LVL=LVL
     return, S - LVL
 END
 
-FUNCTION gh_lowcoh_ssq_CI,CL,asq,nsq
+FUNCTION gh_lowcoh_ssq_CI,CL,asq,nsq,help=help
+    if keyword_set(help) then begin
+       print,'GH_LOWCOH_SSQ_CI'
+       print,'Helper function: normally called by GH_CROSS_RE_IM_NEW.'
+       print,'This is an IDL FUNCTION; use dummy = gh_lowcoh_ssq_CI(/help).'
+       print,'Calling sequence: ci = gh_lowcoh_ssq_CI(CL, asq, nsq)'
+       print,'Returns confidence limits for SSQ in the VN97 low-coherence case.'
+       return, [!values.d_nan,!values.d_nan]
+    endif
     ; Calculate the Confidence Limits of SSQ (VN97 eqn 9)
     if (asq/nsq GT 300) then begin
     ; if S/N is large, use the Gaussian approximation (VN97 eqn 7)
@@ -47,7 +64,15 @@ FUNCTION gh_lowcoh_ssq_CI,CL,asq,nsq
     return, [lower_bound, upper_bound]
 END
 
-FUNCTION gh_lowcoh_ssq,asq,nsq
+FUNCTION gh_lowcoh_ssq,asq,nsq,help=help
+     if keyword_set(help) then begin
+        print,'GH_LOWCOH_SSQ'
+        print,'Helper function: normally called by GH_CROSS_RE_IM_NEW.'
+        print,'This is an IDL FUNCTION; use dummy = gh_lowcoh_ssq(/help).'
+        print,'Calling sequence: ssq = gh_lowcoh_ssq(asq, nsq)'
+        print,'Returns the expected SSQ value for the VN97 low-coherence case.'
+        return, !values.d_nan
+     endif
      ; Analytic formula for average SSQ (eqn 3.20 Chakrabarty 1995)
      xsq = asq/nsq    
      mxsq = 0.5*xsq < 700

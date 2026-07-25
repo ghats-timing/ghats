@@ -1,5 +1,5 @@
 pro ghrebin,x,sx,y,sy,irf,      $
-            xr,sxr,yr,syr,nrd
+            xr,sxr,yr,syr,nrd,help=help
 ;+
 ; NAME: 
 ;      GHREBIN
@@ -30,7 +30,7 @@ pro ghrebin,x,sx,y,sy,irf,      $
 ;       NRD      = number of elements of XR and YR
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP     = Print help and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -40,6 +40,9 @@ pro ghrebin,x,sx,y,sy,irf,      $
 ; ROUTINES USED: 
 ;       LOGREBXSYS: Log rebinning
 ; NOTES:
+;       This is a helper routine normally called by GH_REB and other GHATS
+;       routines, not a standalone analysis command.
+;
 ;       Logarythmic rebinning needs a negative rebin factor.
 ;       IRF = -20 means that each bin will have an amplitude
 ;                 increased by exp(1/20) with respect to the
@@ -52,7 +55,18 @@ pro ghrebin,x,sx,y,sy,irf,      $
 ;       T. Belloni  20 Aug 2001  implementation
 ;       T. Belloni  10 Nov 2001  switch to long integers
 ;		T. Belloni  06 May 2010  from murebin  
+;       2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,'GHREBIN'
+   print,'Helper routine: normally called by GH_REB or other routines.'
+   print,'Calling sequence:'
+   print,'  ghrebin, x, sx, y, sy, irf, xr, sxr, yr, syr, nrd'
+   print,'IRF > 0 gives linear rebinning; IRF < 0 gives logarithmic rebinning.'
+   return
+endif
+;
 ;--------------------------------------------------------------------------
 ;
 ; Logarithmic rebinning after Mariano's FORTRAN subroutine

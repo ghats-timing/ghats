@@ -1,4 +1,44 @@
-function ghats_window,length,tipo,par=par,winn=winn
+function ghats_window,length,tipo,par=par,winn=winn,help=help
+;+
+; NAME:
+;      GHATS_WINDOW
+;
+; PURPOSE:
+;      Return a GHATS FFT window function.
+;
+; CALLING SEQUENCE:
+;      window = GHATS_WINDOW(length, tipo, PAR=par, WINN=winn)
+;      dummy  = GHATS_WINDOW(/HELP)
+;
+; INPUTS:
+;      LENGTH    Number of light-curve points.
+;      TIPO      Window name, for example 'Boxcar', 'Hann', 'Hamming',
+;                'Gauss' or 'Kaiser'.
+;
+; KEYWORDS:
+;      PAR       Window parameter for windows that require one.
+;      WINN      Returned integer window code.
+;      HELP      Print help and return -1.
+;
+; NOTES:
+;      This is a helper function normally called by event-to-FFT/PDS writers,
+;      not a standalone analysis command.
+;      Because this is an IDL FUNCTION, /HELP must be called in function form:
+;      dummy = GHATS_WINDOW(/HELP), not GHATS_WINDOW,/HELP.
+;
+; MODIFICATION HISTORY:
+;      2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
+;-
+
+if keyword_set(help) then begin
+   print,'GHATS_WINDOW'
+   print,'Helper function: normally called by GHATS event-to-FFT/PDS writers.'
+   print,'This is an IDL FUNCTION; use dummy = ghats_window(/help).'
+   print,'Calling sequence: window = ghats_window(length, tipo, par=par, winn=winn)'
+   print,"Known windows include 'Boxcar', 'Bartlett', 'Hann', 'Welch',"
+   print,"'Cosine', 'Hanning', 'Hamming', 'Triplet', 'Gauss' and 'Kaiser'."
+   return,-1
+endif
 	
 x = findgen(length)
 t = x/length-0.5

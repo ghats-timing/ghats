@@ -1,16 +1,34 @@
 ;+
 ; NAME: 
-;      GH_LOWCOH_SSQ
+;      GH_LOWCOH_SSQ_CI
 ; PURPOSE: 
 ;      Calculate the necesarry input to obtain Coherence error estimates
 ;      in the High Powers, Low Measured Coherence case of VN97.
+; CALLING SEQUENCE:
+;      GH_LOWCOH_SSQ_CI, CL, asq, nsq
+; KEYWORDS:
+;      HELP    Print help and return.
 ; NOTES:
-;      This functions are used by GH_CROSS_RE_IM_NEW.
+;      This legacy procedure is not the callable helper used by
+;      GH_CROSS_RE_IM_NEW. GH_CROSS_RE_IM_NEW uses the FUNCTION
+;      GH_LOWCOH_SSQ_CI defined in gh_lowcoh_ssq.pro. On case-sensitive
+;      systems, this mixed-case filename may also not autocompile from a
+;      lower-case IDL command.
 ; MODIFICATION HISTORY: 
 ;      F. Garcia  22 Mar 2024  from scratch
+;      2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 
 
-pro gh_lowcoh_ssq_CI,CL,asq,nsq
+pro gh_lowcoh_ssq_CI,CL,asq,nsq,help=help
+    if keyword_set(help) then begin
+       print,'GH_LOWCOH_SSQ_CI'
+       print,'Legacy procedure. GH_CROSS_RE_IM_NEW uses the function in gh_lowcoh_ssq.pro.'
+       print,'For callable function help, compile gh_lowcoh_ssq.pro and use:'
+       print,'  dummy = gh_lowcoh_ssq_CI(/help)'
+       print,'Calling sequence: gh_lowcoh_ssq_CI, CL, asq, nsq'
+       print,'Computes confidence limits for SSQ in the VN97 low-coherence case.'
+       return
+    endif
     ; Calculate the Confidence Limits of SSQ (VN97 eqn 9)
     if (asq/nsq GT 300) then begin
     ; if S/N is large, use the Gaussian approximation (VN97 eqn 7)

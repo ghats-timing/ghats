@@ -1,4 +1,4 @@
-pro ghx_read_pds_metafile,filename,pdsfiles
+pro ghx_read_pds_metafile,filename,pdsfiles,help=help
 ;+
 ; NAME:
 ;      GHX_READ_PDS_METAFILE
@@ -9,7 +9,35 @@ pro ghx_read_pds_metafile,filename,pdsfiles
 ;      non-empty line. Entries are first used as written, matching other GHATS
 ;      metafile readers. If a relative entry is not found, GHX also tries it
 ;      relative to the metafile location.
+;
+; CALLING SEQUENCE:
+;      GHX_READ_PDS_METAFILE, filename, pdsfiles
+;      GHX_READ_PDS_METAFILE, /HELP
+;
+; INPUTS:
+;      FILENAME    Metafile name in GHX '@file' form.
+;
+; OUTPUTS:
+;      PDSFILES    Array of PDS filenames read from the metafile.
+;
+; KEYWORDS:
+;      HELP        Print help and return.
+;
+; NOTES:
+;      This is a helper routine normally called by GHX, not a standalone
+;      analysis command.
+;
+; MODIFICATION HISTORY:
+;      2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
+
+if(keyword_set(help)) then begin
+   print,'GHX_READ_PDS_METAFILE'
+   print,'Helper routine: normally called by GHX, not run standalone.'
+   print,'Calling sequence: ghx_read_pds_metafile, filename, pdsfiles'
+   print,'Reads a GHX @metafile and returns the list of PDS filenames.'
+   return
+endif
 
 metafile = strmid(filename,1)
 if(metafile eq '') then begin

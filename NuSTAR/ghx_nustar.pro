@@ -1,6 +1,6 @@
 pro ghx_nustar,filename1,filename2,             $
              frequency,power1,power1_err, $
-	         irf, index=index,time=time,sel=sel,rate=rate,rms=back
+	         irf, index=index,time=time,sel=sel,rate=rate,rms=back,help=help
 ;+
 ; NAME: 
 ;      GHX_NUSTAR
@@ -27,12 +27,14 @@ pro ghx_nustar,filename1,filename2,             $
 ;
 ; KEYWORDS:
 ;       INDEX    = range of selected indices
-;       TIME     = Switch for time lags (default phase lags)
+;       TIME     = Time range to select
 ;		SEL      = array with index selection
+;       RATE     = Count-rate range to select
 ;		RMS      = background rate for rms conversion
+;       HELP     = Print help and return
 ;
 ; EXAMPLE:
-;       Read in two FFTs and compute phaselag spectrum
+;       Read in two FFTs and compute the real cross-spectrum
 ;
 ;       MU> GHX_MUSTAR,'tel1.fft','tel2.fft',nu,pow,pow_e,-100
 ;
@@ -47,7 +49,39 @@ pro ghx_nustar,filename1,filename2,             $
 ; MODIFICATION HISTORY: 
 ;       T. Belloni   9 Dec 2013  from GH_CROSS
 ;		T. Belloni  22 May 2017  final implementation for testing
+;       2026 Jul 25  M. Mendez/Codex  Added /HELP text.
 ;			
+;
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GHX_NUSTAR'
+   print,''
+   print,'Read two NuSTAR FFT files and compute the real part of the'
+   print,'cross-spectrum between the two telescopes.'
+   print,''
+   print,'Usage:'
+   print,'  ghx_nustar,file1,file2,frequency,power,power_err,irf'
+   print,'  ghx_nustar,file1,file2,frequency,power,power_err,irf,index=[i1,i2]'
+   print,''
+   print,'Inputs:'
+   print,'  FILE1, FILE2  Input FFT files for the two NuSTAR telescopes.'
+   print,'  IRF           Rebin factor; negative values request logarithmic rebinning.'
+   print,''
+   print,'Outputs:'
+   print,'  FREQUENCY     Output frequency array.'
+   print,'  POWER         Real cross-spectrum estimate.'
+   print,'  POWER_ERR     Error estimate.'
+   print,''
+   print,'Keywords:'
+   print,'  INDEX         Range of selected FFT indices.'
+   print,'  TIME          Time range to select.'
+   print,'  SEL           Array of selected FFT indices.'
+   print,'  RATE          Count-rate range to select.'
+   print,'  RMS           Background rate for rms conversion.'
+   print,'  HELP          Print this help and return.'
+   return
+endif
 ;
 ;--------------------------------------------------------------------------
 ;

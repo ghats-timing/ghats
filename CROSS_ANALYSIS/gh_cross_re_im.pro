@@ -2,16 +2,18 @@ pro gh_cross_re_im,filename1,filename2,             $
              frequency_reb,lag,lag_err,coherence,coherence_err, $
 	         irf,tlag=tl, $
                  repart,repart_err,impart,impart_err, $
-	         index=index,time=time,sel=sel,rate=rate,poisson=poisson,poivalue=poivalue
+	         index=index,time=time,sel=sel,rate=rate,poisson=poisson,poivalue=poivalue, $
+             help=help
 ;+
 ; NAME: 
-;      GH_CROSS
+;      GH_CROSS_RE_IM
 ; PURPOSE: 
 ;      Reads is two FFTs from FFT files, selecting on a range of FFTs
 ;			in time, range, or selection of indices
 ;      This procedure extracts two FFTs from two compatible files. The
 ;      selection is possible only on a continuous range of FFTs.
 ;      Produces phase lags (in radians) or time lags, and coherence.
+;      This routine is obsolete; use GH_CROSS_RE_IM_NEW for new analyses.
 ;
 ; CALLING SEQUENCE: 
 ;       MUCROSS,FILENAME1,FILENAME2,FREQUENCY,LAG,LAG_ERR,
@@ -36,8 +38,14 @@ pro gh_cross_re_im,filename1,filename2,             $
 ;       IMPART_ERR   = Error of the imaginaryi part of the cross spectrum
 ;
 ; KEYWORDS:
-;       TIME         = Switch for time lags (default phase lags)
+;       INDEX         = Range of selected FFT indices
+;       TIME          = Time range to select
+;       TLAG          = Return time lags instead of phase lags
+;       SEL           = Array with FFT index selection
+;       RATE          = Count-rate range to select
+;       POISSON       = Frequency range for Poisson/noise estimate
 ;       POIVALUE      = Real part of noise average cross-spectrum (for subtraction)
+;       HELP          = Print help and return
 ;
 ; EXAMPLE:
 ;       Read in two FFTs and compute phaselag spectrum
@@ -53,7 +61,9 @@ pro gh_cross_re_im,filename1,filename2,             $
 ;       READ_FFT_LINE:     Reads in next line from FFT file
 ;       REBINCROSS:        Array rebinning
 ; NOTES:
-;       None
+;       This routine is obsolete and is superseded by GH_CROSS_RE_IM_NEW,
+;       which keeps the same core purpose but adds additional cross-spectrum
+;       products, noise/coherence options and status controls.
 ; MODIFICATION HISTORY: 
 ;       T. Belloni  30 Sep 2002  from MUXANA_N
 ;       T. Belloni  01 Oct 2002  coherence and time lag switch added
@@ -75,7 +85,40 @@ pro gh_cross_re_im,filename1,filename2,             $
 ;		T. Belloni  16 Jul 2020  absolute value of difference for time compatibility check
 ;  		T. Belloni  26 Feb 2013  added keyword for input real part to subtract (a la gh_cross_range)
 ;       M. Mendez 21 Apr 2021 Output Re/Im parts and coresponding errors
+;       2026 Jul 25  M. Mendez/Codex  Added /HELP and obsolete-routine notice.
 ;			
+;
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_CROSS_RE_IM'
+   print,''
+   print,'OBSOLETE: this routine is superseded by GH_CROSS_RE_IM_NEW.'
+   print,'Use GH_CROSS_RE_IM_NEW for new analyses.'
+   print,''
+   print,'Purpose:'
+   print,'  Read two compatible FFT files and return lag, coherence,'
+   print,'  and real/imaginary cross-spectrum products.'
+   print,''
+   print,'Usage:'
+   print,'  gh_cross_re_im,file1,file2,freq,lag,lag_err,coh,coh_err,irf, $'
+   print,'                 real,real_err,imag,imag_err'
+   print,''
+   print,'Selected keywords:'
+   print,'  INDEX    Select FFT indices.'
+   print,'  TIME     Select time range.'
+   print,'  TLAG     Return time lags instead of phase lags.'
+   print,'  SEL      Array of selected FFT indices.'
+   print,'  RATE     Select count-rate range.'
+   print,'  POISSON  Frequency range for Poisson/noise estimate.'
+   print,'  POIVALUE Real noise cross-spectrum value to subtract.'
+   print,'  HELP     Print this help and return.'
+   print,''
+   print,'Superseding routine:'
+   print,'  gh_cross_re_im_new adds modulus/error outputs, mean/rms/count-rate'
+   print,'  outputs, manual noise levels, raw-coherence and low-coherence options.'
+   return
+endif
 ;
 ;--------------------------------------------------------------------------
 ;

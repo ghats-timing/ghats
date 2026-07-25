@@ -1,7 +1,7 @@
-pro ghats_openfft,filename,unit,dialog=dd
+pro ghats_openfft,filename,unit,dialog=dd,help=help
 ;+
 ; NAME: 
-;      MUXANA_OPENFFT
+;      GHATS_OPENFFT
 ; PURPOSE: 
 ;      Open a FFT file  and returns file unit
 ; EXPLANATION:
@@ -11,7 +11,7 @@ pro ghats_openfft,filename,unit,dialog=dd
 ;      in which case it uses dialog_pickup() to prompt for a file
 ;
 ; CALLING SEQUENCE: 
-;       MUXANA_OPENFFT,FILENAME,UNIT,[/DIALOG]
+;       GHATS_OPENFFT,FILENAME,UNIT,[/DIALOG]
 ; INPUTS:
 ;       FILENAME (I) = name of the input FFT file
 ;
@@ -21,23 +21,34 @@ pro ghats_openfft,filename,unit,dialog=dd
 ; KEYWORDS:
 ;       DIALOG    K  = optional keyword, If set and file is not found,
 ;                      opens a dialog window
+;       HELP         = Print help and return
 ;
 ; EXAMPLE:
 ;       Open a FFT file
 ;
 ;       MU> filename='data/gx339.fft'
-;       MU> muxana_openpds,filename,unit
+;       MU> ghats_openfft,filename,unit
 ;
 ; COMMON BLOCKS: 
 ;       None 
 ; ROUTINES USED: 
 ;       NONE
 ; NOTES:
-;       
+;       This is a helper routine normally called by higher-level FFT readers.
 ; MODIFICATION HISTORY: 
 ;       T. Belloni  24 Sep 2002  from muxana_openpds
 ;		T. Belloni  03 Dec 2010  from Mu6
+;       2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,'GHATS_OPENFFT'
+   print,'Helper routine: normally called by GHATS FFT readers, not run standalone.'
+   print,'Calling sequence: ghats_openfft, filename, unit [, /dialog]'
+   print,'Opens a GHATS .fft file and returns an IDL logical unit.'
+   return
+endif
+;
 ;--------------------------------------------------------------------------
 ;
 ; Open tra file

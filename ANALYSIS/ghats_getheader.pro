@@ -1,6 +1,6 @@
 pro ghats_getheader,unit,gh_version_string,osserv,strumento,sorgente,rmjd, $
                      nft,T,ntotal_ffts,e,proliferation,baryflag,n_spectral_bins, $
-                     background_flag,dummy
+                     background_flag,dummy,help=help
 
 ;+
 ; NAME: 
@@ -25,7 +25,7 @@ pro ghats_getheader,unit,gh_version_string,osserv,strumento,sorgente,rmjd, $
 ;       NTRAFOS       = number of PDS in file
 ;
 ; KEYWORDS:
-;       NONE
+;       HELP          = Print help and return
 ;
 ; EXAMPLE:
 ;       NONE
@@ -35,7 +35,7 @@ pro ghats_getheader,unit,gh_version_string,osserv,strumento,sorgente,rmjd, $
 ; ROUTINES USED: 
 ;       None
 ; NOTES:
-;       None
+;       This is a helper routine normally called by higher-level readers.
 ; MODIFICATION HISTORY: 
 ;       T. Belloni  10 Nov 2001  implementation
 ;       T. Belloni  12 Mag 2002  adapted to MUFFT format
@@ -45,7 +45,21 @@ pro ghats_getheader,unit,gh_version_string,osserv,strumento,sorgente,rmjd, $
 ;   	T. Belloni  11 Nov 2009  to Ghats
 ;       T. Belloni  15 Nov 2009  new ghats version
 ;		T. Belloni  02 Dec 2009  reflects new header v. 0.0.2
+;       2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,'GHATS_GETHEADER'
+   print,'Helper routine: normally called by GHATS readers, not run standalone.'
+   print,'Calling sequence:'
+   print,'  ghats_getheader, unit, gh_version_string, observatory, instrument, $'
+   print,'                  target, rmjd, nft, T, ntotal_ffts, channels, $'
+   print,'                  proliferation, baryflag, n_spectral_bins, $'
+   print,'                  background_flag, dummy'
+   print,'Reads the fixed GHATS binary header from an already-open file unit.'
+   return
+endif
+;
 ;--------------------------------------------------------------------------
 ;
 ; Definitions

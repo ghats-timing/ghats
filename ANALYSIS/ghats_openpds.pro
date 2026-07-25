@@ -1,4 +1,4 @@
-pro ghats_openpds,filename,unit,dialog=dd
+pro ghats_openpds,filename,unit,dialog=dd,help=help
 ;+
 ; NAME: 
 ;      GHATS_OPENPDS
@@ -21,6 +21,7 @@ pro ghats_openpds,filename,unit,dialog=dd
 ; KEYWORDS:
 ;       DIALOG    K  = optional keyword, If set and file is not found,
 ;                      opens a dialog window
+;       HELP         = Print help and return
 ;
 ; EXAMPLE:
 ;       Open a PDS file
@@ -33,7 +34,7 @@ pro ghats_openpds,filename,unit,dialog=dd
 ; ROUTINES USED: 
 ;       NONE
 ; NOTES:
-;       
+;       This is a helper routine normally called by higher-level PDS readers.
 ; MODIFICATION HISTORY: 
 ;       T. Belloni   9 Nov 2001  implementation
 ;       T. Belloni  12 Mag 2002  adapted for MUFFT format
@@ -43,7 +44,17 @@ pro ghats_openpds,filename,unit,dialog=dd
 ;       T. Belloni  13 Feb 2009  free_lun
 ;       T. Belloni  11 Nov 2009  from muxana_openpds to ghats_openpds
 ;		T. Belloni  11 Oct 2018  added filename existence check for GDL
+;       2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
+;--------------------------------------------------------------------------
+if(keyword_set(help)) then begin
+   print,'GHATS_OPENPDS'
+   print,'Helper routine: normally called by GHATS PDS readers, not run standalone.'
+   print,'Calling sequence: ghats_openpds, filename, unit [, /dialog]'
+   print,'Opens a GHATS .pds file and returns an IDL logical unit.'
+   return
+endif
+;
 ;--------------------------------------------------------------------------
 ;
 ; Open pds file

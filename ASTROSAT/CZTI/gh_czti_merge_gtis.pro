@@ -1,4 +1,4 @@
-PRO gh_czti_merge_gtis,gti1,gti2,ngti,deltagap
+PRO gh_czti_merge_gtis,gti1,gti2,ngti,deltagap,help=help
 ;+
 ; NAME:
 ;      GH_CZTI_MERGE_GTIS
@@ -18,7 +18,7 @@ PRO gh_czti_merge_gtis,gti1,gti2,ngti,deltagap
 ;       deltagap    = maximum gap to remove
 ;		
 ; KEYWORDS:
-;		NONE
+;		HELP        = Print help and return
 ;
 ; OUTPUTS:
 ;       NONE
@@ -31,12 +31,22 @@ PRO gh_czti_merge_gtis,gti1,gti2,ngti,deltagap
 ; ROUTINES USED:
 ;       NONE
 ; NOTES
-;       NONE
+;       This is a helper routine for CZTI GTI processing, not a standalone
+;       analysis command.
 ; MODIFICATION HISTORY:
 ;
 ;   T. Belloni  27 Jun 2017    from scratch
+;   2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
 ;-------------------------------------------------------------
+
+if(keyword_set(help)) then begin
+   print,'GH_CZTI_MERGE_GTIS'
+   print,'Helper routine: normally called by CZTI processing code.'
+   print,'Calling sequence: gh_czti_merge_gtis, gti1, gti2, ngti, deltagap'
+   print,'Merges/handles CZTI GTI gaps shorter than DELTAGAP.'
+   return
+endif
 
 gaps = gti1(1:ngti-1)-gti2(0:ngti-1)
 

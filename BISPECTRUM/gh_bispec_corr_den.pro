@@ -34,13 +34,41 @@
 ;          2 = corrected DEN1 is non-positive
 ;          4 = corrected DEN2 is non-positive (set by caller if desired)
 ;          8 = invalid or unavailable input
+;
+; CALLING SEQUENCE:
+;      d1c = GH_BISPEC_DEN1_CORR_INDEP(raw_den1, nprod, ps1, pn1, ps2, pn2, $
+;                                      same12, diagonal, FLAG=flag)
+;      d2c = GH_BISPEC_DEN2_CORR_INDEP(nprod, ps3, FLAG=flag)
+;
+; KEYWORDS:
+;      HELP    Print help and return a NaN sentinel.
+;
+; NOTES:
+;      These are scalar helper functions normally called by bispectrum
+;      production/rebinning routines, not standalone analysis commands.
+;      Because these are IDL FUNCTIONs, /HELP must be called in function form,
+;      for example dummy = GH_BISPEC_DEN1_CORR_INDEP(/HELP).
+;
+; MODIFICATION HISTORY:
+;      2026 Jul 25  M. Mendez/Codex  Added helper /HELP text.
 ;-
 
 function gh_bispec_den1_corr_indep,raw_den1,nprod,ps1,pn1,ps2,pn2, $
-                                      same12,diagonal,flag=flag
+                                      same12,diagonal,flag=flag,help=help
 
 flag = 0L
 nan = !values.d_nan
+
+if(keyword_set(help)) then begin
+   print,'GH_BISPEC_DEN1_CORR_INDEP'
+   print,'Helper function: normally called by bispectrum routines.'
+   print,'This is an IDL FUNCTION; use dummy = gh_bispec_den1_corr_indep(/help).'
+   print,'Calling sequence:'
+   print,'  d1c = gh_bispec_den1_corr_indep(raw_den1,nprod,ps1,pn1,ps2,pn2, $'
+   print,'                                   same12,diagonal,flag=flag)'
+   print,'Returns the corrected DEN1 scalar and sets FLAG.'
+   return,nan
+endif
 
 if((finite(raw_den1) eq 0) or (finite(ps1) eq 0) or $
    (finite(pn1) eq 0) or (finite(ps2) eq 0) or $
@@ -72,10 +100,20 @@ return,corr
 end
 
 
-function gh_bispec_den2_corr_indep,nprod,ps3,flag=flag
+function gh_bispec_den2_corr_indep,nprod,ps3,flag=flag,help=help
 
 flag = 0L
 nan = !values.d_nan
+
+if(keyword_set(help)) then begin
+   print,'GH_BISPEC_DEN2_CORR_INDEP'
+   print,'Helper function: normally called by bispectrum routines.'
+   print,'This is an IDL FUNCTION; use dummy = gh_bispec_den2_corr_indep(/help).'
+   print,'Calling sequence:'
+   print,'  d2c = gh_bispec_den2_corr_indep(nprod, ps3, flag=flag)'
+   print,'Returns the corrected DEN2 scalar and sets FLAG.'
+   return,nan
+endif
 
 if((finite(ps3) eq 0) or long(nprod) le 0L) then begin
    flag = 8L

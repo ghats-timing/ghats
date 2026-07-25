@@ -1,18 +1,21 @@
 pro gh_laxpc_misra_new,infilename,outtype,canalinput,quali_unita,quali_layers,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar,resp=respfilelist
+	       wind=wind,wpar=wpar,resp=respfilelist,help=help
 ;+
 ; NAME:
-;      GH_LAXPC_MISRA
+;      GH_LAXPC_MISRA_NEW
 ; PURPOSE:
-;      Production of LAXPC PDS and FFT files for the GHATS project (data in Misra's format)
+;      Production of LAXPC PDS and FFT files for Misra-format data using the
+;      alternate/new event reader.
 ; EXPLANATION:
-;      This procedure, coming from MU, produces
-;      PDS and FFT files from LAXPC data
+;      This is a specialized variant of GH_LAXPC_MISRA.  Use the standard
+;      GH_LAXPC_MISRA routine unless the alternate event-reader path in this
+;      file is specifically required.
 ;
 ; CALLING SEQUENCE:
-;       GH_LAXPC_MISRA
-;       GH_LAXPC_MISRA,parfilename
-;       GH_LAXPC_MISRA,infilename,outtype,channels,units,layers,treb,npds,outfilename[,/muxana][,bands=B][,gti=GTI][,sliding=SLIDING][,/BARY]
+;       GH_LAXPC_MISRA_NEW
+;       GH_LAXPC_MISRA_NEW,parfilename
+;       GH_LAXPC_MISRA_NEW,infilename,outtype,channels,units,layers,treb,npds,outfilename[,/muxana][,bands=B][,gti=GTI][,sliding=SLIDING][,/BARY]
+;       GH_LAXPC_MISRA_NEW,/HELP
 ; INPUTS:
 ;       PARFILENAME = name of parameter file containing the six
 ;                     parameters of the full command line version
@@ -50,8 +53,10 @@ pro gh_laxpc_misra_new,infilename,outtype,canalinput,quali_unita,quali_layers,tr
 ;					  will overlap two consecutive intervals for four seconds. If this keyword is
 ;					  set, the averaged PDS obtained with GHX does not obviously make statistical sense.
 ;		BARY        = flag for barycentered data. If set, the program will not read the TIME column,
-;					  but BARYTIME. It is the user's responsibility to make sure that the BARYTIME 
+;					  but BARYTIME. It is the user's responsibility to make sure that the BARYTIME
 ;					  column exists.
+;       RESP        = optional response-file list used for energy/channel conversion
+;       HELP        = print help and return
 ;
 ;
 ; OUTPUTS:
@@ -73,13 +78,42 @@ pro gh_laxpc_misra_new,infilename,outtype,canalinput,quali_unita,quali_layers,tr
 ; ROUTINES USED:
 ;
 ; NOTES
-;       None
+;       GH_LAXPC_MISRA provides the standard Misra-format LAXPC production
+;       path.  This routine is a specialized alternate-reader variant kept
+;       under ASTROSAT/temp.
 ; MODIFICATION HISTORY:
 ;   T. Belloni  23 Nov 2015  from GH_SWIFT
 ;	T. Belloni  06 Feb 2017  Misra's version
 ;	T. Belloni  10 Nov 2017  user GTI intersected earlier to avoid miscalculation
 ;	T. Belloni  14 Nov 2017  command line version
+;   2026 Jul 25  M. Mendez/Codex  Added /HELP text.
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_LAXPC_MISRA_NEW'
+   print,''
+   print,'Specialized Misra-format AstroSat/LAXPC front-end using an alternate'
+   print,'event-reader path. The standard routine is GH_LAXPC_MISRA.'
+   print,''
+   print,'Usage:'
+   print,'  GH_LAXPC_MISRA_NEW'
+   print,"  GH_LAXPC_MISRA_NEW, '#parameters.par'"
+   print,"  GH_LAXPC_MISRA_NEW, infile, outtype, channels, units, layers, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    LAXPC event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  channel or energy selection; see routine prologue'
+   print,"  units     LAXPC units to accumulate, e.g. '123'"
+   print,"  layers    LAXPC layers to accumulate, e.g. '12345'"
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, RESP=, /HELP'
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag

@@ -1,18 +1,21 @@
 pro gh_laxpc_biswajit,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,gti=usergti,sliding=sliding,bary=bary, $
-	       wind=wind,wpar=wpar
+	       wind=wind,wpar=wpar,help=help
 ;+
 ; NAME:
-;      GH_LAXPC
+;      GH_LAXPC_BISWAJIT
 ; PURPOSE:
-;      Production of LAXPC PDS and FFT files for the GHATS project
+;      Production of LAXPC PDS and FFT files using the Biswajit/LICU variant.
 ; EXPLANATION:
-;      This procedure, coming from MU, produces
-;      PDS and FFT files from LAXPC data
+;      This procedure is a specialized LAXPC front-end.  The standard
+;      AstroSat/LAXPC front-user routine is GH_LAXPC.  Use this variant only
+;      when the Biswajit-specific LAXPC readers and LICU side product are
+;      required.
 ;
 ; CALLING SEQUENCE:
-;       GH_LAXPC
-;       GH_LAXPC,parfilename
-;       GH_LAXPC,infilename,outtype,channels,treb,npds,outfilename[,/muxana][,bands=B][,gti=GTI][,sliding=SLIDING][,/BARY]
+;       GH_LAXPC_BISWAJIT
+;       GH_LAXPC_BISWAJIT,parfilename
+;       GH_LAXPC_BISWAJIT,infilename,outtype,channels,treb,npds,outfilename[,/muxana][,bands=B][,gti=GTI][,sliding=SLIDING][,/BARY]
+;       GH_LAXPC_BISWAJIT,/HELP
 ; INPUTS:
 ;       PARFILENAME = name of parameter file containing the six
 ;                     parameters of the full command line version
@@ -45,8 +48,9 @@ pro gh_laxpc_biswajit,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,ban
 ;					  will overlap two consecutive intervals for four seconds. If this keyword is
 ;					  set, the averaged PDS obtained with GHX does not obviously make statistical sense.
 ;		BARY        = flag for barycentered data. If set, the program will not read the TIME column,
-;					  but BARYTIME. It is the user's responsibility to make sure that the BARYTIME 
+;					  but BARYTIME. It is the user's responsibility to make sure that the BARYTIME
 ;					  column exists.
+;       HELP        = print help and return
 ;
 ;
 ; OUTPUTS:
@@ -68,10 +72,37 @@ pro gh_laxpc_biswajit,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,ban
 ; ROUTINES USED:
 ;
 ; NOTES
-;       None
+;       GH_LAXPC provides the standard LAXPC production path.  This routine is
+;       kept as a specialized Biswajit/LICU variant.
 ; MODIFICATION HISTORY:
 ;   T. Belloni  23 Nov 2015  from GH_SWIFT
+;   2026 Jul 25  M. Mendez/Codex  Added /HELP text.
 ;-
+if(keyword_set(help)) then begin
+   print,''
+   print,'GH_LAXPC_BISWAJIT'
+   print,''
+   print,'Specialized AstroSat/LAXPC front-end using the Biswajit/LICU variant.'
+   print,'The standard LAXPC routine is GH_LAXPC; use this one only when this'
+   print,'specialized reader/LICU path is required.'
+   print,''
+   print,'Usage:'
+   print,'  GH_LAXPC_BISWAJIT'
+   print,"  GH_LAXPC_BISWAJIT, '#parameters.par'"
+   print,"  GH_LAXPC_BISWAJIT, infile, outtype, channels, treb, npds, outfile"
+   print,''
+   print,'Arguments:'
+   print,'  infile    LAXPC event file, @metafile, or @@metametafile'
+   print,"  outtype   'POWER' for .pds, or 'FFT' for .fft"
+   print,'  channels  [start,end] channel range'
+   print,'  treb      integer time-rebinning factor'
+   print,'  npds      points per FFT, or interval duration in seconds'
+   print,'  outfile   output .pds or .fft filename'
+   print,''
+   print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, /HELP'
+   print,''
+   return
+endif
 ;-------------------------------------------------------------
 common sis, sistema   ; common block with system variable
 common barycentered,baryflag
