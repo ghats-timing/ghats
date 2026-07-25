@@ -26,7 +26,7 @@
 ;
 ;
 ;-----------------------------------------------------------------
-;    Welcome to GHATS 3.3.0      2023 Aug 29
+;    Welcome to GHATS 3.4.0      29 August 2026
 ;-----------------------------------------------------------------
 ;
 ;
@@ -40,15 +40,16 @@
 ;       T. Belloni  11 Nov 2009 first testing
 ;       T. Belloni  03 Jan 2012 release version
 ;       M. Mendez   29 Aug 2023 release version
+;       M. Mendez/Codex 26 Jul 2026 update startup version banner to 3.4.0
 ;-
 
 common sis, sistema
 common vers, versione, data_versione
 common versione,version_id
 sistema = 'GDL'
-versione = 'GHATS  V3.3.0'
-data_versione = '2023 Aug 29'
-version_id = 'GHATSIB0330     '
+versione = 'GHATS  V3.4.0'
+data_versione = '29 August 2026'
+version_id = 'GHATSIB0340     '
 
 
 ;--------------------------------------------------------------------------
