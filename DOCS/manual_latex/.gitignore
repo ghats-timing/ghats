@@ -10,6 +10,7 @@
 *.log
 *.out
 *.pdf
+!main.pdf
 *.run.xml
 *.synctex.gz
 *.toc

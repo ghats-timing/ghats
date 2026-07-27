@@ -285,7 +285,7 @@ Ghats> gh_czti, infile, outtype, channels, treb, npds, outfile
 For Huiyan/HXMT:
 
 \begin{ghatsconsole}
-Ghats> gh_huiyan, infile, outtype, channels, treb, npds, outfile
+Ghats> gh_huiyan, infile, outtype, channels, grades, treb, npds, outfile
 Ghats> gh_huiyan_le, infile, outtype, channels, treb, npds, outfile
 Ghats> gh_huiyan_me, infile, outtype, channels, treb, npds, outfile
 Ghats> gh_huiyan_he, infile, outtype, channels, treb, npds, outfile
@@ -328,8 +328,9 @@ Ghats> ghats_all, 'event.pds'
 \end{ghatsconsole}
 
 For \texttt{.fft} files, \routine{gh_info} is the appropriate header check.
-\routine{ghats_all} can print header information from FFT products, but its
-summary plots are designed for PDS files.
+\routine{ghats_all} can also read an FFT product and compute the PDS panel
+from the individual FFT records, but the light-curve panel is not reliable
+for FFT input.
 
 The main downstream readers are:
 

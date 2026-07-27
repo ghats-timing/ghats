@@ -30,26 +30,27 @@ of \ghats{} since version 3.3.0.
       both PDS and FFT products.
 \item Updated \routine{ghats_all} to produce quick-look power spectra directly
       from GHATS FFT files and to warn about malformed legacy products.
-\item Added a central help system with alphabetical and task-oriented routine
-      indices, command-line help support, and expanded \keyword{HELP} text for
-      many user-facing routines.
-\item Added this LaTeX-based User Manual and a standalone GHATS File Format
-      Specification.
+\item Added a central help system with alphabetical and task-oriented indices,
+      command-line help support, and expanded \keyword{HELP} text for many
+      user-facing routines.
+\item Added this LaTeX-based User Manual, including the native file-format
+      reference in Appendix~B.
 \item Standardized FFT-length handling so that the GHATS \param{NFT} header
       field is written as an IDL \texttt{LONG}, preserving the intended binary
       header layout.
 \item Improved validation and reporting of GHATS FFT/PDS headers, including
       diagnostics for products produced by older command-line paths that wrote
       \param{NFT} with the wrong integer size.
-\item Improved averaging, rebinning, plotting, dynamic-PDS, light-curve,
-      housekeeping, XSPEC-export, and Poisson-noise handling routines.
+\item Improved averaging, rebinning, plotting, dynamic-PDS, light-curve, and
+      housekeeping routines, together with XSPEC-export and Poisson-noise
+      handling.
 \item Fixed malformed FFT/PDS headers caused by writing the FFT length as a
       16-bit IDL integer instead of the required 32-bit IDL \texttt{LONG}.
 \item Fixed FFT quick-look processing so powers are calculated from individual
       FFT records rather than from averaged complex amplitudes, and added
       safeguards for quick-look plots with no positive powers.
-\item Fixed an obsolete AstroSat/CZTI interactive-default branch that prevented
-      the distributed default configuration from compiling.
+\item Fixed an obsolete AstroSat/CZTI branch that prevented the distributed
+      default configuration from compiling.
 \end{itemize}
 
 \begin{ghatsnote}
@@ -75,16 +76,107 @@ analysis.
 \begin{itemize}
 \item Added \routine{GH_CROSS_RANGE}.
 \item Removed \routine{GH_PLOT_CROSS}, a duplicate of \routine{GH_PLOT_LAG}.
-\item Fixed \routine{GH_XTE} sliding-mode bug.
+\item Fixed \routine{GH_XTE} sliding-mode bug in turbo mode.
 \item Fixed \routine{GH_XTE} recalculation of the number of PDS in non-turbo mode.
 \item Fixed \routine{GH_XTE} housekeeping-file discovery in turbo mode when data are elsewhere.
-\item Removed calls to \routine{FSC_FILE_BASENAME} for compatibility.
-\item Restricted \routine{GH_XTE} channel ranges to available channels.
-\item Fixed time-selection bugs in \routine{GH_CROSS}, \routine{GH_CROSS_RANGE},
-  \routine{GH_DYN}, \routine{GH_COLORS}, and related routines.
+\item Removed calls to \routine{FSC_FILE_BASENAME}, and removed that routine
+      from the package for compatibility.
+\item Restricted \routine{GH_XTE} channel ranges to available channels rather
+      than assuming the input range was available.
+\item Made \routine{GH_CROSS_RANGE} intercept the case in which zero or one
+      bins are to be averaged.
+\item Changed the \routine{GH_CROSS} and \routine{GH_CROSS_RANGE}
+      \keyword{TIMELAG} keyword to \keyword{TLAG} for uniqueness.
+\item Fixed time-selection bugs in \routine{GH_CROSS} and
+      \routine{GH_CROSS_RANGE}.
+\item Changed the default frequency rebinning in \routine{GH_DYN} from
+      \param{-100} to \param{1}, i.e. no rebinning.
+\item Added \routine{GH_COLORS}.
+\item Fixed timing bugs in \routine{GHX}, \routine{GH_DYN},
+      \routine{GH_COLORS}, \routine{GH_HK}, \routine{GH_CROSS}, and
+      \routine{GH_CROSS_RANGE}.
 \end{itemize}
 
-\begin{ghatsnote}
-The historical revision entries between version 1.0.2 and version 3.3.0 remain
-in the legacy manual and should be migrated in a later editorial pass.
-\end{ghatsnote}
+\section*{Version 1.1.0}
+
+\begin{itemize}
+\item Added the windowing option to \routine{GH_XTE}.
+\item Added \routine{GH_SWIFT}.
+\item Renamed \routine{GH_HK} to \routine{GH_HK_XTE}.
+\item Renamed \routine{GH_PLOT_HK} to \routine{GH_PLOT_HK_XTE}.
+\item Increased the maximum number of input files in \routine{GH_XTE} to 1000.
+\item Fixed empty-data-stretch bugs in \routine{GH_XTE} and \routine{GH_SWIFT}.
+\item Fixed the \routine{GH_CROSS} Poisson estimate, which had been valid only
+      for RXTE.
+\end{itemize}
+
+\section*{Version 1.1.1}
+
+\begin{itemize}
+\item Added output of the average complex cross-spectrum value to
+      \routine{GH_CROSS_RANGE}.
+\item Added \routine{GH_XMM}.
+\item Added \routine{GH_NUSTAR}.
+\end{itemize}
+
+\section*{Version 2.0.0}
+
+\begin{itemize}
+\item Fixed the \routine{GH_CROSS_RANGE} time-lag output.
+\item Fixed bugs that limited time rebinning in \routine{GH_XTE},
+      \routine{GH_SWIFT}, \routine{GH_XMM}, and \routine{GH_NUSTAR}.
+\item Fixed logical-unit release in \routine{GH_CROSS}.
+\item Fixed the \routine{GH_CROSS} Poisson estimate for instruments different
+      from PCA.
+\item Fixed logical-unit release in \routine{GH_CROSS_RANGE}.
+\item Increased the maximum number of GTI intervals in \routine{GH_NUSTAR}.
+\item Fixed a bug in \routine{GH_PLOT_HK_XTE}.
+\item Fixed a file-logical-unit bug in \routine{GHX}.
+\item Fixed command-line input bugs in \routine{GH_XTE}, \routine{GH_SWIFT},
+      \routine{GH_XMM}, and \routine{GH_NUSTAR}.
+\item Added \routine{GH_LAXPC}.
+\item Added \routine{GH_CZTI}.
+\item Fixed a \routine{GH_CROSS_RANGE} time-lag-computation bug.
+\item Changed \routine{GHX} indices for the \keyword{SEL} option to start from
+      zero, for IDL \routine{WHERE} compatibility.
+\end{itemize}
+
+\section*{Version 3.2.0}
+
+\begin{itemize}
+\item Added the \keyword{RATE} keyword to \routine{GH_CROSS}.
+\item Added an absolute-value check on the time difference used by
+      \routine{GH_CROSS} to test file compatibility.
+\item Added \keyword{POIVALUE} to \routine{GH_CROSS} for the real part of the
+      Poisson contribution to be subtracted.
+\item Added a keyword to \routine{GH_CROSS} for cross-spectrum output.
+\item Added reading of the \param{TIMEZERO} keyword from GTI files and
+      extensions in the \routine{GH_*} production routines.
+\end{itemize}
+
+\section*{Version 3.3.0}
+
+\begin{itemize}
+\item First release after the passing of Tomaso Belloni.
+\item Added \routine{GH_CROSS_RE_IM_NEW}.
+\item \routine{GH_CROSS_RE_IM_NEW}: added real and imaginary cross-spectrum
+      output.
+\item Added the option to rotate the cross spectrum by 45 degrees in
+      \routine{GH_CROSS_RE_IM_NEW}.
+\item Added \routine{GH_CS}.
+\item Made \routine{GH_CS} use \routine{GH_CROSS_RE_IM_NEW} twice; in the
+      process it corrects for deadtime-induced cross talk and, if necessary,
+      for partial correlation when the subject and reference bands overlap.
+\item Added to \routine{GH_CS} the option to compute coherence errors in the
+      case of high powers and low coherence, following equation 9 of Vaughan
+      and Nowak (1997), using \routine{GH_LOWCOH_SSQ} and
+      \routine{GH_LOWCOH_SSQ_CI}.
+\item Added \routine{CONCATENATE_PDS}.
+\item Added PDS-file concatenation in \routine{CONCATENATE_PDS}.
+\item Added \routine{CONCATENATE_FFT}.
+\item Added FFT-file concatenation in \routine{CONCATENATE_FFT}.
+\item Added \routine{GH_DYN_FITS}, which saves and plots a time-frequency image
+      from \routine{GH_DYN} to a FITS file.
+\item Added the Python GUI tool \routine{GH_DYN_FITS_TK.py}, which plots
+      spectrograms created with \routine{GH_DYN_FITS}.
+\end{itemize}

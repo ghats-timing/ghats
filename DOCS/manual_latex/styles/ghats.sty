@@ -8,7 +8,7 @@
 \setlist[itemize]{leftmargin=*, itemsep=0.2em}
 \setlist[enumerate]{leftmargin=*, itemsep=0.2em}
 
-\newcommand{\ghats}{\textsc{GHATS}}
+\DeclareRobustCommand{\ghats}{\textnormal{\textsc{ghats}}}
 \DeclareRobustCommand{\routine}[1]{\texttt{\detokenize{#1}}}
 \DeclareRobustCommand{\keyword}[1]{\texttt{/\detokenize{#1}}}
 \DeclareRobustCommand{\param}[1]{\texttt{\detokenize{#1}}}
@@ -30,6 +30,7 @@
   basicstyle=\ttfamily\small,
   columns=fullflexible,
   keepspaces=true,
+  upquote=true,
   showstringspaces=false,
   breaklines=true,
   frame=single,

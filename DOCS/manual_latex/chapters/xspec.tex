@@ -73,8 +73,9 @@ centres of the data being exported.
 The routine can be used after reading and rebinning a PDS:
 
 \begin{ghatsconsole}
-Ghats> ghx, 'event.pds', freq, power, power_err, -100
-Ghats> gh_xspec, freq, power, power_err, 'event_rebinned'
+Ghats> ghx, 'event.pds', freq, power, power_err
+Ghats> gh_reb, freq, power, power_err, -100, rfreq, rpower, rpower_err
+Ghats> gh_xspec, rfreq, rpower, rpower_err, 'event_rebinned'
 \end{ghatsconsole}
 
 It can also be used for cross-spectral products returned by \routine{gh_cs}.
@@ -82,17 +83,18 @@ For example:
 
 \begin{ghatsconsole}
 Ghats> gh_cs, file_ref, file_sub, freq, lag, lag_err, coh, coh_err, $
-       -100, real, real_err, imag, imag_err
+       -100, real, real_err, imag, imag_err, modcs, modcs_err, mw, qf
 
 Ghats> gh_xspec, freq, real, real_err, 'real_ref_sub'
 Ghats> gh_xspec, freq, imag, imag_err, 'imag_ref_sub'
 Ghats> gh_xspec, freq, lag,  lag_err,  'plag_ref_sub'
 Ghats> gh_xspec, freq, coh,  coh_err,  'cohe_ref_sub'
+Ghats> gh_xspec, freq, modcs, modcs_err, 'mod_ref_sub'
 \end{ghatsconsole}
 
 The names are arbitrary, but using descriptive prefixes such as
-\texttt{real}, \texttt{imag}, \texttt{plag}, and \texttt{cohe} helps keep the
-XSPEC session understandable.
+\texttt{real}, \texttt{imag}, \texttt{plag}, \texttt{cohe}, and
+\texttt{mod} helps keep the XSPEC session understandable.
 
 \subsection{Keywords}
 
