@@ -217,6 +217,15 @@ Ghats> gh_nicer, /help
 Ghats> gh_ep, /help
 \end{ghatsconsole}
 
+\begin{ghatsnote}
+Some mission front ends use the IDL common block name \texttt{COMMON DATI}
+with different internal layouts.  The safe practice is to use a fresh GHATS/IDL
+session when switching between mission families, especially between the
+RXTE/event-list, Huiyan/HXMT, LAXPC, and CZTI production paths.  In IDL, even
+asking for \keyword{HELP} can compile the routine and therefore check the
+mission-specific \texttt{COMMON DATI} layout.
+\end{ghatsnote}
+
 \section{RXTE/PCA}
 
 \routine{gh_xte} is the original GHATS production routine and supports RXTE
