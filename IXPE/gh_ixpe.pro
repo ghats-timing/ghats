@@ -71,6 +71,7 @@ pro gh_ixpe,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,b
 ;       None
 ; MODIFICATION HISTORY:
 ;               M. Mendez   30 Nov 2023  from GH_NICER
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -92,6 +93,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, /NONOISYDET'
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_IXPE, 'event.evt', 'FFT', [0,375], 1, 4096, 'ixpe.fft'"

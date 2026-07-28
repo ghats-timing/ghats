@@ -71,6 +71,7 @@ pro gh_laxpc,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,bands=bands,
 ;       None
 ; MODIFICATION HISTORY:
 ;   T. Belloni  23 Nov 2015  from GH_SWIFT
+;   M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -92,6 +93,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_LAXPC, '@events.lis', 'POWER', [0,1023], 1, 4096, 'laxpc.pds'"

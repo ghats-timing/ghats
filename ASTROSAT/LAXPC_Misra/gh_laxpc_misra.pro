@@ -80,6 +80,7 @@ pro gh_laxpc_misra,infilename,outtype,canalinput,quali_unita,quali_layers,treb,n
 ;	T. Belloni  10 Nov 2017  user GTI intersected earlier to avoid miscalculation
 ;	T. Belloni  14 Nov 2017  command line version
 ;	T. Belloni  09 Jul 2019  fixed color accumulation
+;   M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -103,6 +104,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, RESP='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_LAXPC_MISRA, '@events.lis', 'POWER', [0,1023], '123', '12345', 1, 4096, 'laxpc.pds'"

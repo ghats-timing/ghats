@@ -73,6 +73,7 @@ pro gh_huiyan,infilename,outtype,canali,quali_grade,treb,npds,oufilename,ghx=ghx
 ;		T. Belloni  28 Mar 2018  from GH_HUIYAN_LE (prototype)
 ;		T. Belloni  28 Feb 2019  general version
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -95,6 +96,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_HUIYAN, '@events.lis', 'POWER', [0,1023], '02', 1, 4096, 'hxmt.pds'"

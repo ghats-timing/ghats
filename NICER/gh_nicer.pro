@@ -76,6 +76,7 @@ pro gh_nicer,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,
 ;		T. Belloni  10 Apr 2018  from GH_SWIFT
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
 ;		T. Belloni  02 Sep 2019  added /NONOISYDET
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -97,6 +98,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR=, /NONOISYDET'
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_NICER, 'event.evt', 'FFT', [30,1200], 10000, 32768, 'evt.fft'"

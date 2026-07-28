@@ -98,6 +98,7 @@ pro gh_xte,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ba
 ;		T. Belloni  11 May 2012  fixed windowing bug for turbo
 ;		T. Belloni  14 Dec 2013  fixed time rebinning from I to L
 ;		T. Belloni  26 Nov 2015  fixed npds in command line mode
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -119,6 +120,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, /TURBO, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_XTE, '@binned.lis', 'POWER', [0,35], 1, 4096, 'mysource.pds'"

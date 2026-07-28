@@ -77,6 +77,7 @@ pro gh_nustar,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo
 ;		T. Belloni   6 Dec 2013  max number of GTIs increased to 10k
 ;		T. Belloni  26 Nov 2015  fixed npds in command line mode
 ;		T. Belloni  09 Jul 2019  fixed color accumulation
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -98,6 +99,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, /TURBO, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_NUSTAR, '@events.lis', 'POWER', [35,1909], 1, 4096, 'nu.pds'"

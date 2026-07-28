@@ -76,6 +76,7 @@ pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ban
 ;		T. Belloni  10 Apr 2018  event-list mission template
 ;		T. Belloni  09 Jul 2019  fixed color accumulation in template
 ;       M. Mendez/Codex  08 Jun 2026  Einstein Probe event-list front end
+;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -97,6 +98,9 @@ if(keyword_set(help)) then begin
    print,'  outfile   output .pds or .fft filename'
    print,''
    print,'Keywords: /GHX, BANDS=, GTI=, SLIDING=, /BARY, WIND=, WPAR='
+   print,''
+   print,'COMMON note: use a fresh GHATS/IDL session when switching mission families.'
+   print,'             Mission front ends may use incompatible COMMON DATI layouts.'
    print,''
    print,'Example:'
    print,"  GH_EP, 'fxt_clean.fits', 'POWER', [0,1023], 1, 4096, 'fxt.pds'"
