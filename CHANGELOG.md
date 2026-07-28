@@ -4,7 +4,7 @@ All notable changes to GHATS are documented in this file.
 
 ## [Unreleased]
 
-## [3.4.0] - 2026-08-29
+## [4.0.0] - 2026-08-29
 
 ### Added
 
