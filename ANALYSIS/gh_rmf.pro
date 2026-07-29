@@ -97,6 +97,7 @@ FOR I=1L,NROW DO BEGIN
   FXBWRITE,UNIT,MATRIX(*,I-1),COL6,I
 ENDFOR
 
+FXBFINISH,UNIT
 
 ;create the extension header
 

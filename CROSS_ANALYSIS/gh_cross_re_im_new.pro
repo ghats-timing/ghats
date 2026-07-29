@@ -233,10 +233,11 @@ if(strcmp(instrument1,instrument2) eq 0) then begin
    massage,'continue at your own risk'
 ;   retall
 endif
-if(abs(T1-T2) ne 0.0) then begin
+tol_t = 1.0d-6
+if(abs(T1-T2) gt tol_t) then begin
    massage,'Time resolution not compatible'
    print,T1,T2
-;   retall
+   retall
 endif
 if(nft1 ne nft2) then begin
    massage,'Frequency resolution not compatible'
@@ -340,6 +341,28 @@ rmjd2 = 0d0
 ;
 frequency = (findgen(nft)+1.0) * T
 
+IF(keyword_set(poisson)) THEN BEGIN
+   n_frequency = n_elements(frequency)
+   last_non_nyq = n_frequency - 2L
+   if(last_non_nyq LT 0L) then begin
+      massage,'Poisson frequency range outside frequency array'
+      retall
+   endif
+   fpoi1 = double(poisson[0]) > double(frequency[0])
+   fpoi2 = double(poisson[1]) < double(frequency[last_non_nyq])
+   if(fpoi2 lt fpoi1) then begin
+      massage,'Poisson frequency range outside frequency array'
+      retall
+   endif
+   wpoi = where((frequency ge fpoi1) and $
+                (frequency le fpoi2) and $
+                (lindgen(n_frequency) le last_non_nyq), npoi)
+   if(npoi le 0) then begin
+      massage,'Poisson frequency range outside frequency array'
+      retall
+   endif
+ENDIF
+
 for itrafos=0l,ntrafos-1l do begin
 ;
 read_fft_line,unit1,mufla1,rmjd1,cnts1,poisson1,current_vle_rate1,fndet1,rdata1
@@ -386,8 +409,8 @@ read_fft_line,unit1,mufla1,rmjd1,cnts1,poisson1,current_vle_rate1,fndet1,rdata1
 			  p1 = p1[0]
 			  p2 = where(frequency le poisson[1])
 			  p2 = p2(n_elements(p2)-1)
-			  poilevel1 = mean(pwr1[p1:p2])+frequency*0
-			  poilevel2 = mean(pwr2[p1:p2])+frequency*0
+			  poilevel1 = mean(pwr1[wpoi])+frequency*0
+			  poilevel2 = mean(pwr2[wpoi])+frequency*0
                           ;massage,'Poisson range given'
 		  ENDIF ELSE BEGIN
 	         poilevel1 = 2.0*frequency
@@ -422,12 +445,8 @@ finito:
 ;     compute again poissonian level, but from the average
       IF(keyword_set(poisson)) THEN BEGIN
         massage,'Poisson level recomputed from average'
-        p1 = where(frequency ge poisson[0])
-        p1 = p1[0]
-        p2 = where(frequency le poisson[1])
-        p2 = p2(n_elements(p2)-1)
-        poilevel1 = mean(power1[p1:p2])+frequency*0
-        poilevel2 = mean(power2[p1:p2])+frequency*0
+        poilevel1 = mean(power1[wpoi])+frequency*0
+        poilevel2 = mean(power2[wpoi])+frequency*0
 	  ENDIF
      
         power1    = power1 - poilevel1 
@@ -647,12 +666,27 @@ impart_err= sqrt(((y1 + nslev1)*(y2 + nslev2) - repart*repart + impart*impart)/(
 ; Here integrate the lags in the Poisson range, if specified
 
 IF(keyword_set(poisson)) THEN BEGIN
-     p1 = where(frequency_reb ge poisson[0])
-     p1 = p1[0]
-     p2 = where(frequency_reb le poisson[1])
-     p2 = p2(n_elements(p2)-1)
-	noisereal = mean(float(ccsumjk_reb[p1:p2]))
-	noiseimag = mean(imaginary(ccsumjk_reb[p1:p2]))
+     nfreb = n_elements(frequency_reb)
+     last_reb_non_nyq = nfreb - 2L
+     if(last_reb_non_nyq LT 0L) then begin
+        massage,'Poisson frequency range outside frequency array'
+        retall
+     endif
+     fpoi1_reb = double(poisson[0]) > double(frequency_reb[0])
+     fpoi2_reb = double(poisson[1]) < double(frequency_reb[last_reb_non_nyq])
+     if(fpoi2_reb lt fpoi1_reb) then begin
+        massage,'Poisson frequency range outside frequency array'
+        retall
+     endif
+     wpoir = where((frequency_reb ge fpoi1_reb) and $
+                   (frequency_reb le fpoi2_reb) and $
+                   (lindgen(nfreb) le last_reb_non_nyq), npoir)
+     if(npoir le 0) then begin
+        massage,'Poisson frequency range outside frequency array'
+        retall
+     endif
+	noisereal = mean(float(ccsumjk_reb[wpoir]))
+	noiseimag = mean(imaginary(ccsumjk_reb[wpoir]))
 	lag       = atan(imaginary(ccsumjk_reb)-noiseimag,float(ccsumjk_reb)-noisereal)
 ENDIF
 

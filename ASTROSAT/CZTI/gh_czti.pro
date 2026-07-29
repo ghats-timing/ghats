@@ -461,7 +461,6 @@ endif else begin
    snp=''
    andato=0
    while (andato eq 0) do begin
-      if(tress[0,0] le 1.0) then begin
 ;	      ; Window timing mode
 ;	      np = 8192L
 ;	   endif else begin
@@ -501,6 +500,7 @@ if((np lt 1l) or (mu_power_of_two(np) ne 1)) then begin
    massage,'Number of points must be a power of two!'
    retall
 endif
+np = long(np)
 ;--------------------------------------------------------------------------
 ; Array allocation
 ;
@@ -513,6 +513,7 @@ pwr   = fltarr(np/2)         ; produced power spectrum
 nffts       = 0l    ; must be long!
 perc_old    = 0
 ntotal_ffts = 0l
+ntrafos_header_offset = 84L
 T           = np*tres_fft
 ;--------------------------------------------------------------------------
 ; Compute final number of FFTs
@@ -760,10 +761,8 @@ endfor    ; loop on nfiles
 ;
 if(nffts ne ntotal_ffts) then begin
    print,'Readjusting number of ffts to ',nffts
-   openu,uu,oufilename,/get_lun
-   point_lun,uu,84
-   writeu,uu,nffts
-   free_lun,uu
+   point_lun,output_unit,ntrafos_header_offset
+   writeu,output_unit,nffts
 endif
 ;--------------------------------------------------------------------------
 ; End of program

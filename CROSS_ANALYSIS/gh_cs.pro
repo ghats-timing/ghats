@@ -122,11 +122,26 @@ gh_cross_re_im_new,                                                             
 
 poivalue = 0.0
 IF(keyword_set(poisson)) THEN BEGIN
-         p1 = where(frequency_reb ge poisson[0])
-         p1 = p1[0]
-         p2 = where(frequency_reb le poisson[1])
-         p2 = p2(n_elements(p2)-1)
-         poivalue=mean(repart(where(frequency_reb ge p1 and frequency_reb le p2)))
+         nfreb = n_elements(frequency_reb)
+         last_reb_non_nyq = nfreb - 2L
+         if(last_reb_non_nyq LT 0L) then begin
+            massage,'Poisson frequency range outside frequency array'
+            retall
+         endif
+         fpoi1 = double(poisson[0]) > double(frequency_reb[0])
+         fpoi2 = double(poisson[1]) < double(frequency_reb[last_reb_non_nyq])
+         if(fpoi2 lt fpoi1) then begin
+            massage,'Poisson frequency range outside frequency array'
+            retall
+         endif
+         wpoir = where((frequency_reb ge fpoi1) and $
+                       (frequency_reb le fpoi2) and $
+                       (lindgen(nfreb) le last_reb_non_nyq), npoir)
+         if(npoir le 0) then begin
+            massage,'Poisson frequency range outside frequency array'
+            retall
+         endif
+         poivalue=mean(repart[wpoir])
 ENDIF
 
 

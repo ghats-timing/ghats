@@ -93,6 +93,7 @@ syr = dblarr(n)
                 endelse
              endif
           endfor
+          nrd = nrd + 1l
          endif else begin
           if (irf lt 0) then begin
 ; **

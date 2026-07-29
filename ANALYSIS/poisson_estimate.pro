@@ -22,6 +22,7 @@
 ;
 ; ** Initialize **
 ;
+      if(n_elements(freq_dep_poi) eq 0) then freq_dep_poi = fltarr(nfreq)
       rmin  = 1.0e30
       rmax  = -1.e30
       nft   = nfreq *2

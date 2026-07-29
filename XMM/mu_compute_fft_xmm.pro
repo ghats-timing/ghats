@@ -17,6 +17,12 @@ pro mu_compute_fft_xmm,rdata,pwr,np,T,start_time,source,observatory,           $
 common finestre,finestra,winn
 
 EPS         =  1.0e-6      ; precision tolerance
+;
+; The GHATS binary header writes NFT as an IDL LONG.  Some front-ends can
+; receive command-line integer literals as IDL INTs, so keep this defensive cast
+; close to the header-writing calls as well.
+;
+np          = long(np)
 
 if(chout eq 'POWER') then begin
    out_string='PowerSpectrum'

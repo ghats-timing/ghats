@@ -1,5 +1,5 @@
 pro gh_dyn_fits, inputpds, outputfits,     $
-                     index=index,frebin=reb,trebin=treb, arguments, $
+                     index=index,frebin=reb,trebin=treb, arguments=arguments, $
                      show=show
 
 ; NAME:
@@ -52,7 +52,7 @@ endif else begin
 endelse
 
 strtreb=strtrim(string(treb),2)
-if(arguments EQ !NULL) then arguments = ' '
+if(n_elements(arguments) eq 0) then arguments = ' '
 
 ; CALL GH_DYN
   gh_dyn,inputpds,time,rate,nu,dynima,index=index,frebin=reb,trebin=treb
