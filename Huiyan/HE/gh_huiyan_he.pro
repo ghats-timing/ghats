@@ -219,7 +219,7 @@ case n_params() of
       end
 
    else: begin
-     	print,'Usage: gh_huiyan_le,infile,outtype,channels,treb,npds,oufile'
+     	print,'Usage: gh_huiyan_he,infile,outtype,channels,treb,npds,oufile'
      	stop
       end
 endcase
@@ -727,7 +727,7 @@ endif
 ;
 close,/all
 fine_dps:
-print,'gh_huiyan_le: normal termination'
+print,'gh_huiyan_he: normal termination'
 ;beep
 ;
 ; Standard plot on a PS file
