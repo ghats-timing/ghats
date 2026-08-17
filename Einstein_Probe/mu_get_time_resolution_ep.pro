@@ -13,31 +13,31 @@ pro mu_get_time_resolution_ep,filenames,nfiles,nmetafiles,tress
 type=''
 unit = 10
 for j=0,nmetafiles-1 do begin
-   errmsg = ''
-   fxbopen,unit,filenames(0,j),1,header,errmsg=errmsg
-   instrument=strtrim(fxpar(header,'INSTRUME'))
-   extname   =strtrim(fxpar(header,'EXTNAME'))
-   datamode  =strtrim(fxpar(header,'DATAMODE'))
+   FOR i=0, nfiles-1 DO BEGIN
+      errmsg = ''
+      fxbopen, unit, filenames(i,j), 1, header, errmsg=errmsg
+      instrument = strtrim(fxpar(header, 'INSTRUME'), 2)
+      datamode   = strtrim(fxpar(header, 'DATAMODE'), 2)
 
-   type=''
-   instrument_uc = strupcase(strtrim(instrument,2))
-   if((instrument_uc eq 'FXT') or (instrument_uc eq 'WXT')) then begin
-	type = instrument_uc
-   endif
+      IF (instrument NE 'FXT') THEN BEGIN
+         massage, 'Unrecognized instrument: ' + instrument
+         retall
+      ENDIF
 
-   if(type eq '') then begin
-      print,type
-      massage,'Unrecognized data file!'
-      retall
-   endif
+      timedel   =fxpar(header,'TIMEDEL')
 
-   timedel   = fxpar(header,'TIMEDEL')
-   if(timedel le 0.0d0) then begin
-      massage,'TIMEDEL keyword missing or invalid!'
-      retall
-   endif
+      ; Fallback if TIMEDEL is not in the FITS HEADER
+      IF (timedel LE 0 OR timedel EQ !VALUES.F_NAN) THEN BEGIN
+          CASE datamode OF
+              'FF': timedel = 0.050D0
+              'PW': timedel = 0.0022D0
+              'TM': timedel = 0.00002368D0
+              ELSE: timedel = 0.050D0
+          ENDCASE
+      ENDIF
 
-   tress(0,j) = timedel
-   fxbclose,unit	; close FITS file (can give problems?)
+       tress(i,j) = timedel
+       fxbclose,unit	; close FITS file (can give problems?)
+   ENDFOR
 endfor
 end

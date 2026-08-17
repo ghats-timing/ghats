@@ -23,8 +23,7 @@ pro mu_channel_selection_ep,metafiles,filenames,channels,channels1,channels2, $
 common sis,sistema
 cpar=''
 print,''
-print,'Overview of available channels: ',channels1(0,0,0),'-', $
-      channels2(nchannels(0,nmetafiles-1)-1,0,nmetafiles-1)
+print,'Overview of available channels: all channels 0-4095'
 ;for j=0,nmetafiles-1 do begin
 ;   print,''
 ;   if(metafiles(0) ne 'NONE') then begin
@@ -66,12 +65,7 @@ while (andato eq 0) do begin
 ;
 ;  ALL channels
 ;
-           channels = channels*0
-           for j=0,nmetafiles-1 do begin
-              for i=0,nfiles-1 do begin
-                 channels(0:nchannels(i,j)-1,i,j) = 1
-              endfor
-           endfor
+           channels= channels*0+1
            andato = 1
            istart = channels1(0,0,0)
            iend   = channels2(nchannels(0,nmetafiles-1)-1,0,nmetafiles-1)

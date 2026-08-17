@@ -2,7 +2,7 @@ pro mu_read_ep,unit,tag,rdata,np,channels,selected,jmeta,tres,tres_fft, $
                   tstart_fft,tend_fft,irowl, $
 		          channels_std21,channels_std22,channels_std23,nffts,energy
 ;
-;  Read in Einstein Probe photon event files.
+;  Read in Einstein Probe FXT photon event files.
 ;
 ;-------------------------------------------------------------------------
 ; Parameters
@@ -23,9 +23,12 @@ pro mu_read_ep,unit,tag,rdata,np,channels,selected,jmeta,tres,tres_fft, $
 common dati,tempi,eventi,canale_corrente,std21,std22,std23   ; common block for keeping the data
 common barycentered,baryflag               ; flag for barycentered photons (11-Oct-2009)
 
-; Find the columns and read the whole file into memory on first use.
-header = fxbheader(unit)
-mu_ep_event_columns,unit,time_unit,picol,channel_name,bary_col=bary_col
+;must find the columns (time and pi) and read in the whole file
+;it should be straightforward
+header      = fxbheader(unit)
+ttype       = fxpar(header,'TTYPE*')
+time_unit   = where(ttype eq 'TIME    ')+1
+picol       = where(ttype eq 'PI      ')+1
 
 nrows     =fxpar(header,'NAXIS*')
 nrows     =nrows(1)
@@ -33,13 +36,9 @@ nrows     =nrows(1)
 ; MU6 addition: at first call read in full file to memory using fxbreadm
 if(tag ne canale_corrente) then begin
 	if(baryflag eq 1) then begin
-      if(bary_col eq 0) then begin
-         massage,'/BARY requested, but EP event extension has no BARYTIME column!'
-         retall
-      endif
-		time_unit = bary_col
+		time_unit = fxbcolnum(unit,'barytime')
 	endif
-   	fxbreadm,unit,[time_unit,picol],tempi,energy
+	fxbreadm,unit,[time_unit,picol],tempi,energy
 	canale_corrente = tag
 endif
 ;
@@ -80,8 +79,8 @@ for irow=irowl,nrows do begin
    ;fxbread,unit,time,1,irow
    time  = tempi(irow-1) ; MU6
    ichan = energy(irow-1)
-   if(ichan lt 0) then goto,duecento
-   if(ichan gt n_elements(channels)-1) then goto,duecento
+   ; Check for > 4096, in which case go to 4095
+   if(ichan ge 4096) then ichan = 4095
 ;
 ;     find the requested end time
 ;
@@ -101,12 +100,11 @@ for irow=irowl,nrows do begin
             std23       = std23 + channels_std23(ichan)  ; Band 3
            endif
          endif
-duecento:
 endfor    ; Loop on irowl
 
 trecento:
 
 irowl = min([irow,nrows])
-;print,nffts,tstart_fft-543896000.0d0
+;print,nffts,tstart_fft-543896000.0d0  ; test
 
 end
