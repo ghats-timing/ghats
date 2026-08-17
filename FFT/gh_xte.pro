@@ -1092,7 +1092,7 @@ print,'gh_xte: normal termination'
 ;
 ; Standard plot on a PS file
 ;
-if(keyword_Set(gh)) then begin
+if(keyword_Set(ghx)) then begin
    ghats_all,oufilename,/PS,/poisson
 endif
 
