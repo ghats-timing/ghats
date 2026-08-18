@@ -771,12 +771,12 @@ endif
 ;
 close,/all
 fine_dps:
-print,'gh_swift: normal termination'
+print,'gh_laxpc_biswajit_licu: normal termination'
 ;beep
 ;
 ; Standard plot on a PS file
 ;
-if(keyword_Set(gh)) then begin
+if(keyword_Set(ghx)) then begin
    ghats_all,oufilename,/PS,/poisson
 endif
 

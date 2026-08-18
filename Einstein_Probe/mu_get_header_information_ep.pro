@@ -53,22 +53,21 @@ for j=0,nmetafiles-1 do begin
       instrument= strtrim(fxpar(header,'INSTRUME'))
       datamode	= strtrim(fxpar(header,'DATAMODE'))
       extname	  = strtrim(fxpar(header,'EXTNAME'))
-      instrument_uc = strupcase(strtrim(instrument,2))
 
-      if((instrument_uc eq 'FXT') or (instrument_uc eq 'WXT')) then begin
-         types(i,j) = instrument_uc
-      endif else begin
-         massage,'Unrecognized Einstein Probe data type!'
-         retall
-      endelse
+      if((instrument eq 'FXT') and ((datamode eq 'PW') OR (datamode eq 'FF'))) then begin
+	types(i,j) = 'photon'
+      endif
+      if((instrument eq 'FXT') and (datamode eq 'TM')) then begin
+	types(i,j) = 'win'
+      endif
+      if(instrument ne 'FXT') then begin
+	massage,'Unrecognized data type!'
+	retall
+      endif
 
       tstart = fxpar(header,'TSTART')
       tstop  = fxpar(header,'TSTOP')
       timedel= fxpar(header,'TIMEDEL')
-      if(timedel le 0.0d0) then begin
-         massage,'TIMEDEL keyword missing or invalid!'
-         retall
-      endif
       tdim	=fxpar(header,'TDIM*')
       ntdim	=n_elements(tdim)
       tstarts(i,j) = tstart
@@ -80,7 +79,7 @@ for j=0,nmetafiles-1 do begin
 ;
       fxbclose,unit
       errmsg=''
-      fxbopen,unit,filenames(i,j),'GTI',header,errmsg=errmsg
+      fxbopen,unit,filenames(i,j),2,header,errmsg=errmsg
 ;      status = fxmove(unit,2,/Silent)  ; too slow......_@_Y
 
       if (errmsg ne '') then begin
@@ -93,21 +92,14 @@ for j=0,nmetafiles-1 do begin
 ;	    get number of rows in the GTI list
 	 nrows=fxpar(header,'NAXIS*')
 	 nvaltimes(i,j)=nrows(1)
-	 tzero=fxpar(header,'TIMEZERO')
+	 tzero=double(fxpar(header,'TIMEZERO'))
 ;	    reads in the GTIs
-	 fxbreadm,unit,[1,2],gti,gti2   ; changed for GDL 16-10-2018
-
-; MM: Changed because we are having drop outs in the FFTs with Federico in MAXI J1803
-; whereas this did not happen when we did not include TIMEZERO in the GTI's
-
-         tzero=0.0
-; MM Added only the above line
-
-	 gti = gti+tzero
-	 gti2 = gti2+tzero
+	 fxbread,unit,gti,1
 	 valtimes1(0:nvaltimes(i,j)-1,i,j) = gti
-	 ;fxbread,unit,gti,2
-	 valtimes2(0:nvaltimes(i,j)-1,i,j) = gti2
+	 gti = gti+tzero
+	 fxbread,unit,gti,2
+	 valtimes2(0:nvaltimes(i,j)-1,i,j) = gti
+	 gti = gti+tzero
       endelse
       fxbclose,unit
    endfor
@@ -127,7 +119,6 @@ for j=0,nmetafiles-1 do begin
       if(tstarts(i,j) lt tstarts(i-1,j)) then begin
 	 massage,'Input files are not sorted in time!'
 	 retall
-	 
       endif
 
       if(types(i,j) ne types(i-1,j)) then begin

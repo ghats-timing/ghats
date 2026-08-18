@@ -27,10 +27,12 @@ pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ban
 ;                                  FFTed in each interval
 ;                   = if float/doule: length of interval in seconds
 ;       OUTFILENAME = name of output .pds or .fft file
-;		
+;
 ; KEYWORDS:
 ;		GHX         = if set, GHATS_ALL is launched at the end of PDS production to generate
 ;					  a PDF with the output information. The PDS filename is 'gh.pds'
+;		TURBO       = if set, the PDS is produced through Craig Markwardt's RADPS routine. It is
+;					  faster, but it only works for a few missions
 ;		BANDS       = channel bands for the production of three standard2 light curves. It is an array of six
 ;			  		  elements ([0,10,11,20,21,40]) means three curves in the channel ranges 0-10, 11-20 and
 ;			 		  21-40 respectively. They can then be used to produce X-ray hardnesses. The EP default
@@ -39,7 +41,7 @@ pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ban
 ;			          If set, it must be a valid filename. Two possible input formats are possible. Either
 ;					  an ASCII file with lines containing start end time of each GTI (in EP mission time units),
 ;					  or a standard GTI FITS file
-;		SLIDING     = optional parameter for sliding the time window. If not set, the time intervals for 
+;		SLIDING     = optional parameter for sliding the time window. If not set, the time intervals for
 ;					  the FFT (data streth) do not overlap. If set to N, they overlap by an Nth of their
 ;					  total duration. As an example, if the data intervals are 16 seconds long, SLIDING=4
 ;					  will overlap two consecutive intervals for four seconds. If this keyword is
@@ -70,13 +72,7 @@ pro gh_ep,infilename,outtype,canali,treb,npds,oufilename,ghx=ghx,turbo=turbo,ban
 ; NOTES
 ;       None
 ; MODIFICATION HISTORY:
-;       T. Belloni/S. Motta  9 May 2012  from GH_XTE
-;		T. Belloni  14 Dec 2013  fixed time rebinning from I to L
-;		T. Belloni  26 Nov 2015  fixed npds in command line mode
-;		T. Belloni  10 Apr 2018  event-list mission template
-;		T. Belloni  09 Jul 2019  fixed color accumulation in template
-;       M. Mendez/Codex  08 Jun 2026  Einstein Probe event-list front end
-;       M. Mendez/Codex  28 Jul 2026  added COMMON DATI session-safety note to /HELP
+;       F. Garcia  9 June 2026 from GH_SWIFT
 ;-
 if(keyword_set(help)) then begin
    print,''
@@ -180,7 +176,7 @@ MAX_VLE         = 6000    ; number for rates
 if(keyword_set(bands)) then begin
 	BANDE           = bands
 endif else begin
-    BANDE           = [50,500,501,1500,1501,3000]
+    BANDE           = [20,1000,1001,2000,2001,4095]
 endelse
 
 ; Prepare arrays for accepted channels for hardness
@@ -298,6 +294,7 @@ nvaltimes = lonarr(nfiles,nmetafiles)
 mu_get_header_information_ep,filenames,types,tstarts,tends,tress,valtimes1,valtimes2, $
      nfiles,nmetafiles,nvaltimes, $
          sourcename,obsid,startdate,telescope,instrument
+
 ;-------------------------------------------------------------------
 ;
 ; obtain channel information
@@ -540,7 +537,254 @@ close,1
 ; Main loop over input files
 ;=========================================================================
 ;
-; Non-turbo EP event-list path
+; Here ection where Craig's RADPS is called. It works, but
+; only under very precise circumstances, which means I cannot use it. Moreover,
+; it is not going to work for ASTROSAT data.
+;
+if (turbo eq 1 and chou2 eq 'p') then begin
+	; TURBO NOT CHANGED FROM RXTE VERSION!  **** IT DOES NOT WORK
+	print,'----------------------------------------------------------------'
+	print,'                **** Turbo speed activated! ****'
+	print,'----------------------------------------------------------------'
+; Check whether a window file is required
+    if((keyword_set(wind) and (wind ne 'Boxcar'))) then begin
+	     print,'Windowing is not available in turbo mode!'
+	     return
+	end
+; Call to Craig's routine'
+   if(keyword_set(usergti)) then begin
+	; assemble single array for user supplied GTIs
+	turbo_gti = transpose([[u_gti1],[u_gti2]])
+	radps,filenames,np*tres_fft,dps,steptime=np*tres_fft/proliferation, $
+	      avgtime=np*tres_fft/proliferation,tbinsize=tres_fft,climits=canali, $
+	      quiet=1,p0=licu,time=times,freqavg=nu,nspecsum=numerofft,status=stato, $
+	      gti=turbo_gti,/nocrossgti,quality=q,exposure=e,minfracexp=1.0d0
+   endif else begin
+	radps,filenames,np*tres_fft,dps,steptime=np*tres_fft/proliferation, $
+	      avgtime=np*tres_fft/proliferation,tbinsize=tres_fft,climits=canali, $
+	      quiet=1,p0=licu,time=times,freqavg=nu,nspecsum=numerofft,status=stato, $
+	      /nocrossgti,quality=q,exposure=e,minfracexp=1.0d0
+   endelse
+;
+;  Cleaning of bad (not completely exposed intervals)
+
+buoni     = where(q eq 0)   ; identify good spectra
+dps       = dps(*,buoni)
+times     = times(buoni)
+licu      = licu(buoni)
+numerofft = n_elements(times)
+;
+; Now needs to accumulate the housekeeping information, not included in
+; radps
+
+; WORK IN PROGRESS
+vle_times       = dblarr(MAX_VLE)
+vle_counts      = fltarr(MAX_VLE)
+npcus           = intarr(MAX_VLE)
+rate1 	    	= fltarr(MAX_VLE)
+rate2 	     	= fltarr(MAX_VLE)
+rate3 		    = fltarr(MAX_VLE)
+nvle_total      = 0
+;
+; Major constants
+;
+MAX_TYPES    =   5
+C_TYPES      =   6
+MAX_COL      = 256
+MAX_FILES    =  40
+;
+; Prepare keyword names for VLE rates (per PCU)
+;
+datatypes    = strarr(MAX_TYPES)
+datatypes(0) = 'VLECntPcu0'
+datatypes(1) = 'VLECntPcu1'
+datatypes(2) = 'VLECntPcu2'
+datatypes(3) = 'VLECntPcu3'
+datatypes(4) = 'VLECntPcu4'
+;
+; Prepare keyword names for PCU2  columns
+;
+datatypesc   = strarr(C_TYPES)
+datatypesc(0) = 'X1LSpecPcu2'
+datatypesc(1) = 'X1RSpecPcu2'
+datatypesc(2) = 'X2LSpecPcu2'
+datatypesc(3) = 'X2RSpecPcu2'
+datatypesc(4) = 'X3LSpecPcu2'
+datatypesc(5) = 'X3RSpecPcu2'
+;
+; Array to contain column numbers corresponding to VLE rates
+;
+vlecol       = intarr(MAX_TYPES)
+;
+; Array to contain column numbers corresponding to PCU2 rates
+;
+ccol         = intarr(C_TYPES)
+
+; Added 7-FEB-2012
+dirname=file_dirname(filenames(0,0))
+std2_filelist   = file_search(dirname+'/FS4a*')
+
+; check whether any STD2 files have been found. If not, skip the section and have
+; all data seto to 0 to avoid a crash
+if std2_filelist[0] ne '' then begin
+   po              = strpos(std2_filelist,'_bkg')
+   std2_filelist    = std2_filelist(where(po eq -1)) ; remove bkg files
+
+   for istd2=0,n_elements(std2_filelist)-1 do begin ; loop over the std2 files
+   		;
+		; Open the file
+		;
+		;print,std2_filelist(istd2)  ; test
+		fxbopen,unit,std2_filelist(istd2),1,header,errmsg=errmsg
+		;
+		; Read in basic header information
+		;
+		t1        = fxpar(header,'TSTART')
+		t2        = fxpar(header,'TSTOP')
+		timedel   = fxpar(header,'TIMEDEL')
+		datamode  = strtrim(fxpar(header,'DATAMODE'))
+		tdim      = fxpar(header,'TDIM*')
+		nfields   = strtrim(fxpar(header,'TFIELDS'))
+		ttype     = fxpar(header,'TTYPE*')
+		nrows     = fxpar(header,'NAXIS*')
+		idltype   = intarr(nfields)
+		;
+		; Identifies which column numbers correspond to the VLE and Time columns
+		;
+		timecol = -100  ; marker for column number corresponding to Time
+		fxbtform,header,tbcol,idltype,formato,numval,maxval
+		ttype       = fxpar(header,'TTYPE*')
+		for i=0,nfields-1 do begin
+	   		for j=0,4 do begin
+	      		if(ttype(i) eq datatypes(j)) then vlecol(j) = i+1
+	   		endfor
+	   		if(ttype(i) eq 'Time    ') then timecol = i+1
+		endfor
+		;
+		; Identifies which column numbers correspond to the PCU2 columns
+		;
+		for i=0,nfields-1 do begin
+	   		for j=0,5 do begin
+	      		if(ttype(i) eq datatypesc(j)) then ccol(j) = i+1
+	   		endfor
+		endfor
+
+    	nvle       = nrows(1)
+		if(nvle_total+nvle gt MAX_VLE) then begin
+	   		massage,'Insufficient array size for vle counts'
+	   		retall
+		endif
+		;
+		; Now loop over the STD2 rows
+		;
+		for irow=0,nvle-1 do begin
+	   		npcus(nvle_total+irow)      = 0
+	   		vle_counts(nvle_total+irow) = 0.0
+			;
+			; For each row, read in time and vle rates
+			; The assumption is that if the VLE counts for a PCU are > 1, the PCU is on
+	   		fxbread,unit,timel,timecol,irow+1
+	   		vle_times(nvle_total+irow) = timel
+	   		for j=0,4 do begin
+	      		fxbread,unit,icounts,vlecol(j),irow+1
+	      	if (icounts gt 1) then begin
+	         	npcus(nvle_total+irow) = npcus(nvle_total+irow)+1
+	      	endif
+	      	vle_counts(nvle_total+irow) = vle_counts(nvle_total+irow) + icounts
+	   	endfor
+		;
+		;  Here accumulate the three PCU2 light curves
+		;
+	   	spettro = intarr(129)
+	   	for j=0,5 do begin
+			;       Add up all layers, left and right
+	      	fxbread,unit,spe,ccol(j),irow+1
+	      	spettro =  spettro + spe
+	   	endfor
+	   	rate1(nvle_total+irow) = float(total(spettro(BANDE(0):BANDE(1))))
+	   	rate2(nvle_total+irow) = float(total(spettro(BANDE(2):BANDE(3))))
+	   	rate3(nvle_total+irow) = float(total(spettro(BANDE(4):BANDE(5))))
+		;
+		;  Convert VLE counts into counts per second (VLE rate)
+		;
+	   	vle_counts(nvle_total+irow) = vle_counts(nvle_total+irow)/timedel
+		endfor
+
+		nvle_total = nvle_total + nvle
+		;
+		; Close standard2 file
+		;
+		fxbclose,unit
+	endfor
+endif else begin
+	       print,'No STD2 data found!'
+endelse
+
+vle_times  = vle_times(0:nvle_total-1)
+vle_counts = vle_counts(0:nvle_total-1)
+npcus      = npcus(0:nvle_total-1)
+rate1      = rate1(0:nvle_total-1)
+rate2      = rate2(0:nvle_total-1)
+rate3      = rate3(0:nvle_total-1)
+
+;====================================================================
+
+; Assemble mjd
+	sanno   = strmid(startdate,0,4)
+	smese   = strmid(startdate,5,2)
+	sgiorno = strmid(startdate,8,2)
+	sora    = strmid(startdate,11,2)
+	sminuto = strmid(startdate,14,2)
+    ssecondo = strmid(startdate,17,2)
+    reads,sanno,anno
+    reads,smese,mese
+    reads,sgiorno,giorno
+    reads,sora,ora
+    reads,sminuto,minuto
+    reads,ssecondo,secondo
+    quandoera = [anno,mese,giorno,ora,minuto,secondo]
+    juldate,quandoera,rmjd
+    rmjd=double((rmjd)-0.5)
+; Array handling
+    n_frequenze = 2*long(n_elements(nu))
+    n_tempi     = long(n_elements(licu))
+    telescopio  = string(telescope,format='(a16)')
+    sorgente    = string(sourcename,format='(a16)')
+    strumento   = string(instrument,format='(a16)')
+	tempo0  = times(0)
+; Main loop to write th PDS file
+	for ncraig=0,n_elements(licu)-1 do begin
+		;
+		; Here accumulate HK information and rates for each line
+		;
+		tempo_centrale = times(ncraig)+T/2.0
+		mu_get_vle_rate,tempo_centrale,current_vle_rate, $
+		                ndet,vle_times,vle_counts,npcus,nvle_total
+		mu_read_std2_rates,tempo_centrale,std21,std22,std23, $
+		                   vle_times,rate1,rate2,rate3,nvle_total
+		;
+		cct     = float(licu(ncraig)*np*tres_fft)
+		potenza = float(dps(*,ncraig))
+		ttt     = rmjd+(times(ncraig)-tempo0)/86400.0d
+
+		mu_zhang,cct,T,ndet,n_frequenze,current_vle_rate,i_vle,poi
+
+	mu_write_single_power,2.0*cct,potenza,n_frequenze,poi,cct, $
+	       T,ttt,oufilename,ndet,current_vle_rate,new_output_flag, $
+	       output_unit,n_tempi,canali, $
+	       telescopio, $
+	       sorgente,$
+	       strumento,std21,std22,std23,  $
+		   BANDE,turbo,gti_flag,proliferation,i_vle     ; MU6
+	endfor
+	close,/all
+    if(stato eq 1) then begin
+	    goto,fine_dps
+	endif else begin
+	   print,'RADPS error!'
+	   return
+	endelse
+endif
 ;========================NON TURBO===============================
 	if((wind eq 'Hamming') or (wind eq 'Triplet') or (wind eq 'Gauss') or (wind eq 'Kaiser')) then begin
 		if(~keyword_set(wpar)) then begin
@@ -679,7 +923,7 @@ for i=0,nfiles-1 do begin    ;         ******** MAIN LOOP ********
 ;  ****  HERE THE GOING GETS TOUGH!
 ;  The FFT is actually done in here!
 ;
-;***************************************************************************
+;pippo ;****************************************************************************************************
    crate = total(rdata)/n_elements(rdata)/tres_fft
    mu_compute_fft,rdata,pwr,np,T,start_time,source,observatory,           $
           instrument,oufilename,chout,1,0,                   $
@@ -701,7 +945,7 @@ for i=0,nfiles-1 do begin    ;         ******** MAIN LOOP ********
    endif else begin
 	  tstart_fft = tend_fft   ; in case no sliding is requested
    endelse
-   sw_first_segment = 0
+   ep_first_segment = 0
    goto,quattrodieci
 ;
 ;  Second loop return
