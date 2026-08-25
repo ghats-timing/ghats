@@ -19,4 +19,8 @@ To recognise Tomaso’s work and honour his legacy, we decided to upload the las
 
 Originally, the GHATS package could only be obtained directly from Tomaso, and was not distributed in any way. This was so because he did not have the resources to support the software for a broad community. From 3.3.0 we decided to make the code available on this Github repository to the community. We, however, cannot support all the request for updates, upgrades, etc., and will allow the community to add contributed routines or modify parts of the code (e.g., to correct bugs) on a development branch.
 
+<strong>
+In August 2026, we released version 4.0.0, representing a major functional expansion of GHATS. This version incorporates a complete bispectral analysis module, expanded support for new observatories (including Einstein Probe and IXPE), a standardized binary header layout, and a comprehensive LaTeX-based User Manual.
+</strong>
+
 We miss Tomaso, and his enthusiasm in adding stuff to the code whenever we came with ideas. We would have very much liked to share this new step with him. In the meantime, we try to honour his memory by trying to do good work using this software. We are sure that you, the new generation of users, will do the same.
